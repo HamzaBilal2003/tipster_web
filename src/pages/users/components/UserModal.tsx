@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import images from "../../../assets/images";
+import { API_DOMAIN, API_DOMAIN_images } from "../../../../util/apiConfig";
+import { toast } from "react-toastify";
+import { useMutation } from "@tanstack/react-query";
+import Cookies from "js-cookie";
 
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (userData: any) => void;
-  userData?: any;
+  userData: any;
   isEdit?: boolean;
 }
 
@@ -26,36 +29,84 @@ const UserModal: React.FC<UserModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  userData = null,
+  userData,
   isEdit = false,
 }) => {
-  console.log(userData);
   const [showPassword, setShowPassword] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     username: userData?.name || "",
     email: userData?.email || "",
-    dateOfBirth: userData?.dob || "",
-    nationality: userData?.nationality || "",
+    dateOfBirth: userData?.dob,
+    nationality: userData?.Nationality || "",
     password: "",
     phone: userData?.phone || "",
-    profileImage: images.dummyImage,
+    profileImage: userData?.profileImage,
   });
-
-  if (!isOpen) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "dateOfBirth") {
+      // Convert 'yyyy-MM-dd' → 'dd-MM-yyyy' for state
+      const formattedDate = value.split("-").reverse().join("-");
+      setFormData({ ...formData, [name]: formattedDate });
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
+
+  const token = Cookies.get("authToken");
+
+  const updateUserMutation = useMutation({
+    mutationKey: ["updateUser"],
+    mutationFn: async (data: any) => {
+      const response = await fetch(`${API_DOMAIN}user/update-profile/${userData?.id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update user profile");
+      }
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast.success("User profile updated successfully!");
+      onSave(data);
+      onClose();
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to update user profile");
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
-    onClose();
+
+    // Prepare the payload
+    const updatedData: any = {
+      username: formData.username,
+      email: formData.email,
+      dateOfBirth: formData.dateOfBirth,
+      nationality: formData.nationality,
+      phone: formData.phone,
+      profileImage: formData.profileImage,
+    };
+
+    // Only include password if it's not empty
+    if (formData.password) {
+      updatedData.password = formData.password;
+    }
+
+    // Submit the data
+    updateUserMutation.mutate(updatedData);
   };
 
   const togglePasswordVisibility = () => {
@@ -68,10 +119,16 @@ const UserModal: React.FC<UserModalProps> = ({
       const reader = new FileReader();
       reader.onload = () => {
         setProfileImage(reader.result as string);
+        setFormData((prev) => ({
+          ...prev,
+          profileImage: reader.result as string,
+        }));
       };
       reader.readAsDataURL(file);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-[#0000005e] max-h-screen z-[500] py-[50px] overflow-auto">
@@ -88,12 +145,12 @@ const UserModal: React.FC<UserModalProps> = ({
             {/* Profile Image Upload */}
             <div className="flex justify-center relative">
               <label className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer">
-                {formData.profileImage ? (
-                  <img src={formData.profileImage} alt="Profile" className="w-full h-full rounded-lg object-cover" />
+                {profileImage ? (
+                  <img src={profileImage} alt="Profile" className="w-full h-full rounded-lg object-cover" />
                 ) : (
-                  <i className="bi bi-person-circle text-6xl"></i>
+                  <img src={API_DOMAIN_images + formData.profileImage} alt="Profile" className="w-full h-full rounded-lg object-cover" />
                 )}
-                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                <input type="file" className="hidden" id="profileImage" name="profileImage" accept="image/*" onChange={handleImageChange} />
               </label>
             </div>
 
@@ -131,7 +188,11 @@ const UserModal: React.FC<UserModalProps> = ({
               <input
                 type="date"
                 name="dateOfBirth"
-                value={formData.dateOfBirth}
+                value={
+                  formData.dateOfBirth
+                    ? formData.dateOfBirth.split("-").reverse().join("-") // Convert 'dd-MM-yyyy' → 'yyyy-MM-dd'
+                    : ""
+                }
                 onChange={handleChange}
                 className="w-full p-4 bg-gray-100 rounded-lg"
               />
@@ -144,12 +205,12 @@ const UserModal: React.FC<UserModalProps> = ({
                 name="nationality"
                 value={formData.nationality}
                 onChange={handleChange}
-                className="w-full p-4 bg-gray-100 rounded-lg appearance-none"
+                className="w-full p-4 bg-gray-100 rounded-lg"
               >
-                <option value="">Select nationality</option>
-                {nationalities.map((nation) => (
-                  <option key={nation} value={nation}>
-                    {nation}
+                <option value="">Select Nationality</option>
+                {nationalities.map((nationality) => (
+                  <option key={nationality} value={nationality}>
+                    {nationality}
                   </option>
                 ))}
               </select>

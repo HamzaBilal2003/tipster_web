@@ -4,12 +4,14 @@ import ActivityComponent from './ActivityComponent';
 import TipsComponent from './TipsComponent';
 import PostsComponent from './PostsComponent';
 import StatisticsComponent from './StatisticsComponent';
+import { SingleUserData } from '../../../../util/queries/userManagement';
 
 type Props = {
   userId: string;
+  DataList : SingleUserData['data'];
 };
 
-const Main: React.FC<Props> = ({ userId }) => {
+const Main: React.FC<Props> = ({ userId,DataList }) => {
   const [portionSelected, setPortionSelected] = useState<string>('activity');
 
   const tabs = [
@@ -18,22 +20,29 @@ const Main: React.FC<Props> = ({ userId }) => {
     { name: 'posts', value: 'posts' },
     { name: 'statistics', value: 'statistics' },
   ];
+  const TableData = {
+    activity: DataList?.userActivity,
+    tips: DataList?.tips,
+    posts: DataList?.posts,
+    statistics: DataList?.statistics,
+  }
 
   const handlePortion = (portion: string) => {
     setPortionSelected(portion);
     console.log(portion, userId);
   };
+  console.log("main data",TableData)
 
   const renderPortion = () => {
     switch (portionSelected) {
       case 'activity':
-        return <ActivityComponent userId={userId} />;
+        return <ActivityComponent userId={userId} DataList={TableData.activity} />;
       case 'tips':
-        return <TipsComponent userId={userId} />;
+        return <TipsComponent userId={userId} DataList={TableData.tips} />;
       case 'posts':
-        return <PostsComponent userId={userId} />;
+        return <PostsComponent DataList={TableData.posts} />;
       case 'statistics':
-        return <StatisticsComponent userId={userId} />;
+        return <StatisticsComponent DataList={TableData.statistics} />;
       default:
         return null;
     }

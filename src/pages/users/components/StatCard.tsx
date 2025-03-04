@@ -18,9 +18,9 @@ const StatCard: React.FC<StatCardProps> = ({ title, subtitle, value, icons }) =>
             <span
               key={index}
               className={`w-10 h-10 flex items-center justify-center  rounded-md border-2 ${
-                icon === "l"
-                  ? "border-red-500 text-red-500"
-                  : icon === "r"
+                icon === "L"
+                  ? "border-red-600 text-red-500"
+                  : icon === "R"
                   ? "border-yellow-500 text-yellow-500"
                   : "border-green-500 text-green-500"
               }`}

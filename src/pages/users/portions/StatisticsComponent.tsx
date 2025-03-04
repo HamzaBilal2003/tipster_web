@@ -2,24 +2,17 @@ import React from 'react';
 import WinRateChart from '../components/WinRateChart';
 import StatCard from '../components/StatCard';
 import Dropdown from '../../../components/DropDown';
+import { SingleUserData } from '../../../../util/queries/userManagement';
 
 type Props = {
-  userId: string;
+  DataList: SingleUserData['data']['statistics']
 };
 
-const StatisticsComponent: React.FC<Props> = ({ userId }) => {
+const StatisticsComponent: React.FC<Props> = ({DataList}) => {
   // Dummy data for demonstration - replace with actual data fetching
-  const winRates = [
-    { date: 'Jan', winRate: 50 },
-    { date: 'Feb', winRate: 30 },
-    { date: 'Mar', winRate: 50 },
-    { date: 'Apr', winRate: 25 },
-    { date: 'May', winRate: 60 },
-    { date: 'Jun', winRate: 80 },
-    { date: 'Jul', winRate: 50 },
-    { date: 'Aug', winRate: 90 },
-    { date: 'Sep', winRate: 10 },
-  ];
+
+  console.log("Statictis Data : ", DataList);
+  const winRates = DataList.graphicalData;
   const overallWinRate = '75%';
   const totalWins = 245;
   const last5Wins = ['w', 'w', 'w', 'l', 'w']; // 'w' for win, 'l' for loss
@@ -39,30 +32,30 @@ const StatisticsComponent: React.FC<Props> = ({ userId }) => {
   }
   return (
     <div className="flex flex-col gap-6">
-      <Dropdown
+      {/* <Dropdown
         options={DateDropOptions}
         onChange={handleFilter}
         placeholder="Date"
         position='left-0'
-      />
+      /> */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Win Rate Chart */}
         <div className="">
-          <WinRateChart winRates={winRates} overallWinRate={overallWinRate} />
+          <WinRateChart winRates={winRates} overallWinRate={DataList.win_rate} chartId='10' />
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2'>
           {/* Total Wins */}
-          <StatCard title="Total Wins" subtitle="Last 30 days" value={totalWins} />
+          <StatCard title="Total Wins" subtitle="Last 30 days" value={DataList.total_wins} />
 
           {/* Last 5 Wins */}
-          <StatCard title="Last 5 Wins" subtitle="Last 30 days" icons={last5Wins} />
+          <StatCard title="Last 5 Wins" subtitle="Last 30 days" icons={DataList.last_five} />
 
           {/* Average Odds */}
-          <StatCard title="Average Odds" subtitle="Last 30 days" value={averageOdds} />
+          <StatCard title="Average Odds" subtitle="Last 30 days" value={DataList.average_odds} />
 
           {/* Total Predictions */}
-          <StatCard title="Total Predictions" subtitle="Last 30 days" value={totalPredictions} />
+          <StatCard title="Total Predictions" subtitle="Last 30 days" value={DataList.total_predictions} />
         </div>
       </div>
     </div>

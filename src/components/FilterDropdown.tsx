@@ -1,4 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 import React, { useState, useRef, useEffect } from 'react';
+import Cookies from 'js-cookie';
+import { API_DOMAIN } from '../../util/apiConfig';
 
 interface FilterOption {
   id: string;
@@ -50,7 +53,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ options, onApply }) => 
 
   const handleRangeChange = (filterId: string, key: 'min' | 'max', value: string) => {
     const numValue = value === '' ? '' : Number(value);
-    
+
     setSelectedFilters(prev => ({
       ...prev,
       [filterId]: {
@@ -63,7 +66,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ options, onApply }) => 
   const handleCheckboxChange = (filterId: string, optionId: string, checked: boolean) => {
     setSelectedFilters(prev => {
       const currentOptions = prev[filterId]?.options || [];
-      
+
       if (checked) {
         return {
           ...prev,
@@ -105,6 +108,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ options, onApply }) => 
     return !!selectedFilters[filterId];
   };
 
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Filter Button */}
@@ -129,9 +133,8 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ options, onApply }) => 
                 <div
                   key={filter.id}
                   onClick={() => selectFilter(filter.id)}
-                  className={`px-4 py-3 cursor-pointer hover:bg-gray-100 ${
-                    activeFilter === filter.id ? 'bg-gray-100' : ''
-                  } ${isFilterSelected(filter.id) ? 'font-medium' : ''}`}
+                  className={`px-4 py-3 cursor-pointer hover:bg-gray-100 ${activeFilter === filter.id ? 'bg-gray-100' : ''
+                    } ${isFilterSelected(filter.id) ? 'font-medium' : ''}`}
                 >
                   {filter.label}
                 </div>
@@ -180,7 +183,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ options, onApply }) => 
                         checked={(selectedFilters[activeFilter]?.options || []).includes(option.id)}
                         onChange={(e) => handleCheckboxChange(activeFilter, option.id, e.target.checked)}
                       />
-                      <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                      {/* <div className="w-8 h-8 bg-gray-200 rounded-full"></div> */}
                       <label htmlFor={`${activeFilter}-${option.id}`} className="cursor-pointer">
                         {option.label}
                       </label>
@@ -199,11 +202,11 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ options, onApply }) => 
                 {Object.keys(selectedFilters).map(filterId => {
                   const filter = options.find(f => f.id === filterId);
                   if (!filter) return null;
-                  
+
                   return (
                     <div key={filterId} className="flex justify-between items-center">
                       <span>{filter.label}</span>
-                      <button 
+                      <button
                         onClick={() => removeFilter(filterId)}
                         className="text-gray-500 hover:text-gray-700"
                       >

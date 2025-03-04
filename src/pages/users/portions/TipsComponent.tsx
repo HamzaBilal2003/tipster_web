@@ -1,26 +1,59 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import TableFiltersCan from '../../../components/TableFiltersCan'
 import ItemGap from '../../../components/ItemGap'
 import Dropdown from '../../../components/DropDown'
 import FilterDropdown from '../../../components/FilterDropdown'
 import SearchFilter from '../../../components/SearchFilter'
-import { filterOptions } from '../../../components/FilterJson'
 import TableCan from '../../../components/TableCan'
 import images from '../../../assets/images'
 import PreRow from '../../predication/components/PreRow'
 import TipModal from '../components/TipModal'
 import TipRow from '../components/TipRow'
-
+import { SingleUserData } from '../../../../util/queries/userManagement'
+import { useQueries, useQuery } from '@tanstack/react-query'
+import { API_DOMAIN } from '../../../../util/apiConfig'
+import Cookies from 'js-cookie'
 type props = {
-  userId: string
+  userId: string;
+  DataList: {
+    id: number;
+    user_id: number;
+    betting_company_id: number;
+    codes: string;
+    ods: string;
+    status: string;
+    result: string;
+    match_date: string;
+    betting_category: string;
+    created_at: string;
+    updated_at: string;
+    betting_company: {
+      id: number;
+      title: string;
+      logo: string;
+      status: string;
+      created_at: string;
+      updated_at: string;
+    };
+    user: {
+      id: number;
+      username: string;
+      profile_picture: string;
+      win_rate: string;
+      last_five: Array<string>;
+    };
+  }[];
 }
 
-const TipsComponent = ({ userId }: props) => {
+const TipsComponent = ({ userId, DataList }: props) => {
   const [appliedFilters, setAppliedFilters] = useState<Record<string, any>>({});
   const [selectedTip, setSelectedTip] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-
+  const [status,setStatus] =useState<'approved' | 'pending' | string >();
+  const [DateFilter,setDateFilter] = useState<any>();
+  const [searchUser,setSearchUser] = useState<string>('');
+  console.log("tips data", DataList)
+  const [FilteredData, setFilteredData] = useState<props['DataList']>(DataList)
   const BulkAction = [
     { name: "Export CSV", value: "csv", },
     { name: "Export PDF", value: "pdf", },
@@ -117,8 +150,11 @@ const TipsComponent = ({ userId }: props) => {
     }
   ];
 
-  const handleFilter = (value: any) => {
-    console.log(value);
+  const handleStatusFilter = (value: any) => {
+    setStatus(value)
+  };
+  const handleDateFilter = (value: any) => {
+    setDateFilter(value)
   };
 
   const handleViewTip = (tipData: any) => {
@@ -130,13 +166,133 @@ const TipsComponent = ({ userId }: props) => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
+  const token = Cookies.get("authToken");
 
+  interface Company {
+    id: number;
+    title: string;
+  }
+
+  const { data: companies, isLoading, error } = useQuery<Company[]>({
+    queryKey: ["companies"],
+    queryFn: async () => {
+      try {
+        const response = await fetch(`${API_DOMAIN}betting-company/get-all`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch companies");
+        }
+
+        const result = await response.json();
+        return result.data.map((company: Company) => ({
+          value: company.id,
+          label: company.title,
+        }));
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+        throw error;
+      }
+    },
+  });
+  const filterOptions = [
+    {
+      id: "odds",
+      label: "Odds",
+      type: "range",
+      min: 0,
+      max: 1000,
+    },
+    {
+      id: "bettingCompany",
+      label: "Betting Company",
+      type: "checkbox",
+      options: companies, // ✅ Now correctly waits for data
+    },
+    {
+      id: "winRate",
+      label: "Win Rate",
+      type: "range",
+      min: 0,
+      max: 100,
+    },
+    {
+      id: "category",
+      label: "Category",
+      type: "checkbox",
+      options: [
+        { id: "football", label: "Football" },
+        { id: "basketball", label: "Basketball" },
+        { id: "tennis", label: "Tennis" },
+        { id: "hockey", label: "Hockey" },
+      ],
+    },
+  ];
   const handleApplyFilters = (filters: Record<string, any>) => {
     console.log('Applied filters:', filters);
     setAppliedFilters(filters);
-
-    // Here you would typically filter your data based on the selected filters
   };
+  const HandleAllFilter = () => {
+    let filtered = DataList;
+
+    if (status) {
+      filtered = filtered.filter((tip) => tip.status === status);
+    }
+
+    if (appliedFilters.bettingCompany && appliedFilters.bettingCompany.length > 0) {
+      filtered = filtered.filter((tip) => appliedFilters.bettingCompany.includes(tip.betting_company_id.toString()));
+    }
+
+    if (appliedFilters.winRate) {
+      filtered = filtered.filter((tip) => tip.user.win_rate >= appliedFilters.winRate[0] && tip.user.win_rate <= appliedFilters.winRate[1]);
+    }
+    if (appliedFilters.odds) {
+      filtered = filtered.filter((tip) => parseInt(tip.ods) >= appliedFilters.odds.min && parseInt(tip.ods) <= appliedFilters.odds.max );
+    }
+
+    if (searchUser && searchUser.length > 0) {
+      filtered = filtered.filter((tip) => tip.user.username.toLowerCase().includes(searchUser.toLowerCase()));
+    }
+
+    if (DateFilter) {
+      const today = new Date();
+      let startDate = new Date();
+
+      switch (DateFilter) {
+        case 'today':
+          startDate = new Date();
+          break;
+        case 'yesterday':
+          startDate.setDate(today.getDate() - 1);
+          break;
+        case 'last-7-days':
+          startDate.setDate(today.getDate() - 7);
+          break;
+        case 'last-30-days':
+          startDate.setDate(today.getDate() - 30);
+          break;
+        case 'last-60-days':
+          startDate.setDate(today.getDate() - 60);
+          break;
+        default:
+          startDate = new Date();
+      }
+
+      filtered = filtered.filter((tip) => new Date(tip.match_date) >= startDate);
+    }
+
+    setFilteredData(filtered);
+  };
+
+  useEffect(() => {
+    HandleAllFilter()
+  }, [DateFilter,status,appliedFilters,searchUser])
+  console.log(FilteredData)
 
   return (
     <div className='flex flex-col gap-6'>
@@ -144,36 +300,36 @@ const TipsComponent = ({ userId }: props) => {
         <ItemGap>
           <Dropdown
             options={DateDropOptions}
-            onChange={handleFilter}
+            onChange={handleDateFilter}
             placeholder="Date"
             position='left-0'
           />
           <Dropdown
             options={Status}
-            onChange={handleFilter}
+            onChange={handleStatusFilter}
             placeholder="Approval Status"
             position='left-0'
           />
           <Dropdown
             options={BulkAction}
-            onChange={handleFilter}
+            onChange={()=>console.log("bulk action selected")}
             placeholder="Bulk Action"
             position='left-0'
           />
         </ItemGap>
         <div className='flex items-center gap-4'>
-          <FilterDropdown
+          {!isLoading && filterOptions && <FilterDropdown
             options={filterOptions}
             onApply={handleApplyFilters}
-          />
-          <SearchFilter
-            handleFunction={handleFilter}
-          />
+          />}
+          {/* <SearchFilter
+            handleFunction={(search :string) => setSearchUser(search)}
+          /> */}
         </div>
       </TableFiltersCan>
       <TableCan
-        headerTr={["company", "odds", "code", "win rate","last wins", "Date", "status", "approval", "other"]}
-        dataTr={bodyData}
+        headerTr={["company", "odds", "code", "last wins", "Date", "status", "approval", "other"]}
+        dataTr={FilteredData}
         headerAlign='left'
         TrName={TipRow}
         trNameProps={{
@@ -181,11 +337,11 @@ const TipsComponent = ({ userId }: props) => {
         }}
 
       />
-      <TipModal
+      {!isLoading && selectedTip && <TipModal
         isOpen={isModalOpen}
         onClose={closeModal}
         tipData={selectedTip}
-      />
+      />}
     </div>
   )
 }

@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import StatsCard from '../../components/StatsCard';
-import images from '../../assets/images';
 import TableFiltersCan from '../../components/TableFiltersCan';
 import ItemGap from '../../components/ItemGap';
 import SearchFilter from '../../components/SearchFilter';
@@ -8,40 +7,37 @@ import FilterTab from '../../components/FilterTab';
 import Dropdown from '../../components/DropDown';
 import TableCan from '../../components/TableCan';
 import UserRow from './components/UserRow';
-import { usersManagmentData } from './components/UserData';
 import UserModal from './components/UserModal';
-import FilterDropdown from '../../components/FilterDropdown';
 import { users } from '../../assets/Data';
-
+import Cookies from 'js-cookie';
+import { useQuery } from '@tanstack/react-query';
+import { fetchUsers } from '../../../util/queries/userManagement'
+interface selectedUser {
+    id: number;
+    username: string;
+    email: string;
+    profile_picture: string | null;
+    is_active: number;
+    vip_status: string;
+    created_at: string;
+    phone: string;
+};
 const UserManagement = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [selectedUser, setSelectedUser] = useState<selectedUser | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
-    const [appliedFilters, setAppliedFilters] = useState<Record<string, any>>({});
+    const [appliedFilters, setAppliedFilters] = useState<any[]>({});
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const statsData = [
-        {
-            title: 'Total Users',
-            value: "2,600",
-            change: 5,
-            icon: images.sidebarIcons.user,
-            color: 'red'
-        },
-        {
-            title: 'Online Users',
-            value: "250",
-            change: "10",
-            icon: images.sidebarIcons.user,
-            color: 'red'
-        },
-        {
-            title: 'Subscribed Users',
-            value: "260",
-            change: "10",
-            icon: images.sidebarIcons.user,
-            color: 'red'
-        },
-    ];
+    const token = Cookies.get('authToken')?.toString();
+    console.log(token)
+    // usequesy funcion
+    const { data: UsersManagemaentData, onsuccess, error, isLoading } = useQuery({
+        queryKey: ['users'],
+        queryFn: () => fetchUsers(token),
+    })
+    const bodyTable = UsersManagemaentData?.data.users
+    const statsData = UsersManagemaentData?.data.stats
 
     const tabs = [
         { name: "all", value: "all" },
@@ -59,7 +55,8 @@ const UserManagement = () => {
         console.log(value);
     };
 
-    const onEditUser = (userData: any) => {
+    const onEditUser = (userData: selectedUser) => {
+        console.log("edited profile", userData)
         setSelectedUser(userData);
         setIsEditMode(true);
         setIsModalOpen(true);
@@ -74,11 +71,19 @@ const UserManagement = () => {
     const handleSaveUser = (userData: any) => {
         console.log('Saving user data:', userData);
     };
+    const handleSearch = (searchTerm: string) => {
+        console.log(searchTerm)
+        setSearchTerm(searchTerm)
+        const serachUser = bodyTable?.filter((item)=>{
+            return item.username.toLowerCase().includes(searchTerm.toLowerCase())
+        })
+        setAppliedFilters(serachUser)
+    }
 
     return (
         <div className='flex flex-col gap-6'>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                {statsData.map((data, index) => (
+                {!isLoading && statsData?.map((data, index) => (
                     <StatsCard
                         key={index}
                         title={data.title}
@@ -91,7 +96,7 @@ const UserManagement = () => {
             </div>
             <div className="flex justify-between items-center">
                 <h1 className='text-4xl font-medium'>Users Summary</h1>
-                <button 
+                <button
                     onClick={handleAddUser}
                     className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                 >
@@ -100,11 +105,11 @@ const UserManagement = () => {
             </div>
             <TableFiltersCan>
                 <ItemGap>
-                    <FilterTab
+                    {/* <FilterTab
                         tabs={tabs}
                         handleValue={handleFilter}
                         activeTab={tabs[0].name}
-                    />
+                    /> */}
                     <Dropdown
                         options={BulkAction}
                         onChange={handleFilter}
@@ -113,20 +118,21 @@ const UserManagement = () => {
                     />
                 </ItemGap>
                 <SearchFilter
-                    handleFunction={handleFilter}
+                    handleFunction={handleSearch}
                 />
             </TableFiltersCan>
-            <TableCan
-                headerTr={['name','email','phone','last login',"reg date","status","subscription","other"]}
+            {!isLoading && bodyTable && <TableCan
+                // bodyTable "status",
+                headerTr={['name', 'email', 'phone', "reg date", "subscription", "other"]}
                 headerAlign={'left'}
-                dataTr={users}
+                dataTr={searchTerm && searchTerm.length > 0 ?  appliedFilters :  bodyTable}
                 TrName={UserRow}
                 trNameProps={{
                     onEditUser: onEditUser
                 }}
-            />
+            />}
 
-            <UserModal 
+            <UserModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveUser}

@@ -1,19 +1,22 @@
 import React from 'react';
 import MoreDropdown from '../../../components/MoreDropdown';
+import { SingleUserData } from '../../../../util/queries/userManagement';
+import FormatDate from '../../../components/FormatDate';
 
 interface PostRowProps {
   displayData: {
-    img?: string;
-    name: string;
-    postType: string;
-    postContent: string;
-    date: string;
-    approval: string;
-    likes: number;
-    comments: number;
-    shares: number;
-    views: string;
-    id?: string;
+    id: number;
+    title: string | null;
+    content: string | null;
+    user_id: number;
+    has_image: number;
+    status: string;
+    created_at: string;
+    updated_at: string;
+    images: string;
+    share_count: number;
+    view_count: number;
+    type: string;
   };
   index: number;
   onViewPost?: (data: any) => void;
@@ -31,24 +34,24 @@ const PostRow: React.FC<PostRowProps> = ({ displayData, index, onViewPost }) => 
             type='checkbox'
             className='appearance-none w-5 h-5 border-2 border-gray-400 rounded-md checked:bg-green-600 checked:border-green-600 focus:ring-2 focus:ring-green-500'
           />
-          {displayData.postType}
+          {displayData.type}
         </div>
 
       </td>
 
       {/* Post Content */}
       <td className='px-4 py-2 text-black'>
-        {displayData.postContent} <span className='text-red-600 cursor-pointer'>View All</span>
+        {displayData.content?.length < 30 ? displayData.content :   (displayData.content)?.slice(0,30) + " ..." }
       </td>
 
       {/* Date */}
-      <td className='px-4 py-2 text-black'>{displayData.date}</td>
-      <td className='px-4 py-2 text-black'>{displayData.comments},{displayData.likes},{displayData.shares}</td>
+      <td className='px-4 py-2 text-black'>{FormatDate(displayData.created_at)}</td>
+      <td className='px-4 py-2 text-black'>{displayData.share_count},{displayData.view_count}</td>
 
       {/* Approval Status */}
       <td className='px-4 py-2'>
-        <div className={`capitalize p-1 px-2 rounded-full ${displayData.approval === 'Pending' ? 'text-[#FFA500]' : 'text-green-500'}`}>
-          {displayData.approval}
+        <div className={`capitalize p-1 px-2 rounded-full ${displayData.status === 'under_review' ? 'text-red-500' : 'text-green-500'}`}>
+          {displayData.status.replace("_"," ")}
         </div>
       </td>
 
@@ -59,10 +62,10 @@ const PostRow: React.FC<PostRowProps> = ({ displayData, index, onViewPost }) => 
             <button onClick={() => onViewPost && onViewPost(displayData)} className='bg-white block text-left p-2 cursor-pointer rounded-lg hover:bg-gray-200 w-full hover:text-black'>
               View Post
             </button>
-            <div className='w-full h-[2px] bg-gray-300'></div>
+            {/* <div className='w-full h-[2px] bg-gray-300'></div>
             <button className='bg-white block p-2 text-left cursor-pointer rounded-lg hover:bg-gray-200 w-full hover:text-black text-red-600'>
               Delete
-            </button>
+            </button> */}
           </div>
         </MoreDropdown>
       </td>

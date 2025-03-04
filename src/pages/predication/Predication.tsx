@@ -9,7 +9,7 @@ import TableCan from '../../components/TableCan';
 import PreRow from './components/PreRow';
 import FilterDropdown from '../../components/FilterDropdown';
 import TipDetailsModal from './components/TipDetailsModal;';
-import { filterOptions } from '../../components/FilterJson';
+// import { filterOptions } from '../../components/FilterJson';
 
 const Predication = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -190,10 +190,10 @@ const Predication = () => {
                     />
                 </ItemGap>
                 <div className='flex items-center gap-4'>
-                    <FilterDropdown
+                    {/* <FilterDropdown
                         options={filterOptions}
                         onApply={handleApplyFilters}
-                    />
+                    /> */}
                     <SearchFilter
                         handleFunction={handleFilter}
                     />

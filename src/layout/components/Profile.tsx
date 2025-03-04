@@ -1,16 +1,19 @@
 import React from "react";
+import Cookies from "js-cookie";
+import { API_DOMAIN_images } from "../../../util/apiConfig";
 
 interface ProfileProps {
   name?: string;
   img?: string;
 }
 
-const Profile: React.FC<ProfileProps> = ({ name = "Admin", img = "https://randomuser.me/api/portraits/men/1.jpg" }) => {
+const Profile: React.FC<ProfileProps> = () => {
+  const userData = JSON.parse(Cookies.get('user') as string);
   return (
     <div className="flex items-center gap-2">
-      <img src={img} alt="profile" className="w-14 h-14 rounded-full" />
+      <img src={`${API_DOMAIN_images+ userData?.profile_picture}`} alt="profile" className="w-14 h-14 rounded-full" />
       <div>
-        <h4 className="text-lg font-bold">Hey, {name}</h4>
+        <h4 className="text-lg font-bold">Hey, {userData?.username}</h4>
       </div>
     </div>
   );

@@ -1,49 +1,96 @@
 import React, { useState } from 'react';
 import Dropdown from '../../../components/DropDown';
 import images from '../../../assets/images';
+import { useMutation } from '@tanstack/react-query';
+import { UpdateTipFetch } from '../../../../util/mutations/TipsMutation';
+import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
 
 interface TipModalProps {
   isOpen: boolean;
   onClose: () => void;
-  tipData: any;
+  tipData: {
+    id: number;
+    user_id: number;
+    betting_company_id: number;
+    codes: string;
+    ods: string;
+    status: string;
+    result: string;
+    match_date: string;
+    betting_category: string;
+    created_at: string;
+    updated_at: string;
+    betting_company: {
+      id: number;
+      title: string;
+      logo: string;
+      status: string;
+      created_at: string;
+      updated_at: string;
+    };
+    user: {
+      id: number;
+      username: string;
+      profile_picture: string;
+      win_rate: string;
+      last_five: Array<string>;
+    };
+  };
 }
 
 const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
-  const [selectedDate, setSelectedDate] = useState<string>(tipData?.date || '2025-02-01');
-  const [approvalStatus, setApprovalStatus] = useState<string>(tipData?.approval ? 'Approved' : 'Pending');
-  const [betStatus, setBetStatus] = useState<string>(tipData?.status || 'Pending');
-  const [odds, setOdds] = useState<string>(tipData?.odds || '25.22');
-  const [selectedCompony, setselectedCompony] = useState(tipData?.WalletName || 'Company 1');
-  const [code, setCode] = useState<string>(tipData?.code || 'WECSEKCKSC');
-  const [category, setCategory] = useState<string>(tipData?.category || 'Basketball');
+  const [selectedDate, setSelectedDate] = useState<string>(tipData?.match_date);
+  const [approvalStatus, setApprovalStatus] = useState<string>(tipData.status);
+  const [betStatus, setBetStatus] = useState<string>(tipData.result);
+  const [odds, setOdds] = useState<string>(tipData?.ods);
+  const [selectedCompony, setselectedCompony] = useState(tipData?.betting_company.title);
+  const [code, setCode] = useState<string>(tipData?.codes);
+  const [category, setCategory] = useState<string>(tipData?.betting_category);
 
-  const companyOptions = [
-    { name: 'Sporty Bet', value: 'Sporty Bet',icon: images.swapy },
-    { name: 'Betway', value: 'Betway',icon: images.swapy },
-    { name: '1xBet', value: '1xBet',icon: images.swapy },
-    { name: 'Bet365', value: 'Bet365',icon: images.swapy },
-  ];
-
-  const categoryOptions =[
-    { name: 'Football', value: 'Football' },
-    { name: 'Basketball', value: 'Basketball' },
-    { name: 'Tennis', value: 'Tennis' },
-  ]
+  const token = Cookies.get('authToken');
+  console.log("tipData : " , tipData)
   const BetStatusOptions = [
-    { name: 'Pending', value: 'pending' },
+    { name: 'Running', value: 'running' },
     { name: 'Won', value: 'won' },
     { name: 'Lost', value: 'lost' },
   ];
 
-  if (!isOpen) return null;
+  const { mutate: updateTipMutation, isPending, error } = useMutation({
+    mutationKey: ['updateTip'],
+    mutationFn: () => UpdateTipFetch({ status: approvalStatus, result: betStatus },tipData.id, token),
+    onSuccess: (data : any) => {
+      console.log(data)
+      onClose();
+      toast('Tip updated successfully', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    },
+    onError: (error: any) => {
+      console.log(error);
+      toast.error(
+        error?.response?.data?.message || error.message || "Update failed."
+      );
+    },
+  });
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const handleSave = () => {
+    console.log({ status: approvalStatus, result: betStatus });
+    updateTipMutation();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-[#0000004d] bg-opacity-50 py-[50px] z-[1000] overflow-auto">
-      <div className="bg-white rounded-lg w-full max-w-md mx-auto overflow-hidden">
+      <div className="bg-white rounded-lg w-full max-w-md mx-auto">
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl font-bold">Tip Details</h2>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200">
@@ -54,13 +101,10 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
         <div className="p-4 space-y-6">
           <div className="space-y-2">
             <label className="block text-gray-700 font-medium">Betting Company</label>
-            <Dropdown
-              FullWidth={true}
-              isNotActiveBg={true}
-              options={companyOptions}
-              onChange={setselectedCompony}
-              placeholder={selectedCompony}
-              borderColor="gray-300"
+            <input
+              type="text"
+              value={tipData.betting_company.title}
+              className="p-3 bg-gray-100 rounded-lg w-full outline-none"
             />
           </div>
 
@@ -68,8 +112,7 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
             <label className="block text-gray-700 font-medium">Number of odds</label>
             <input
               type="text"
-              value={odds}
-              onChange={(e) => setOdds(e.target.value)}
+              value={tipData.ods}
               className="p-3 bg-gray-100 rounded-lg w-full outline-none"
             />
           </div>
@@ -79,11 +122,10 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
             <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
               <input
                 type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
+                value={tipData.codes}
                 className="bg-transparent outline-none w-full"
               />
-              <button onClick={() => copyToClipboard(code)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => copyToClipboard(tipData.codes)} className="text-gray-500 hover:text-gray-700">
                 <i className='bi bi-copy text-xl'></i>
               </button>
             </div>
@@ -91,13 +133,10 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
 
           <div className="space-y-2">
             <label className="block text-gray-700 font-medium">Category</label>
-            <Dropdown
-              FullWidth={true}
-              isNotActiveBg={true}
-              options={categoryOptions}
-              onChange={setCategory}
-              placeholder={category}
-              borderColor="gray-300"
+            <input
+              type="text"
+              value={tipData.betting_category}
+              className="p-3 bg-gray-100 rounded-lg w-full outline-none"
             />
           </div>
 
@@ -105,9 +144,8 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
             <label className="block text-gray-700 font-medium">Date</label>
             <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
               <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                type="text"
+                value={tipData.match_date}
                 className="bg-transparent outline-none w-full"
               />
             </div>
@@ -121,8 +159,8 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
                 onChange={(e) => setApprovalStatus(e.target.value)}
                 className="bg-transparent outline-none w-full p-3"
               >
-                <option value="Approved">Approved</option>
-                <option value="Pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="pending">Pending</option>
               </select>
             </div>
           </div>
@@ -130,19 +168,24 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
           <div className="space-y-2">
             <label className="block text-gray-700 font-medium">Bet Status</label>
             <div className="flex items-center justify-between bg-gray-100 rounded-lg">
-              <Dropdown
-                FullWidth={true}
-                isNotActiveBg={true}
-                options={BetStatusOptions}
-                onChange={setBetStatus}
-                placeholder={betStatus}
-                borderColor="gray-300"
-              />
+              <select
+                value={betStatus}
+                onChange={(e) => setBetStatus(e.target.value)}
+                className="bg-transparent outline-none w-full p-3"
+              >
+                {BetStatusOptions.map((option, index) => (
+                  <option key={index} value={option.value}>{option.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 
-          <button className="w-full py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors">
-            Save
+          <button
+            disabled={isPending}
+            onClick={handleSave}
+            className="w-full py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+          >
+            {isPending ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>

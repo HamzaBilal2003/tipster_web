@@ -11,17 +11,24 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.8",
+    "@tanstack/react-query": "^5.66.11",
+    "axios": "^1.8.1",
     "bootstrap-icons": "^1.11.3",
     "chart.js": "^4.4.8",
+    "formik": "^2.4.6",
+    "js-cookie": "^3.0.5",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
     "react-datepicker": "^8.1.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.2.0",
-    "tailwindcss": "^4.0.8"
+    "react-toastify": "^11.0.5",
+    "tailwindcss": "^4.0.8",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@types/js-cookie": "^3.0.6",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",

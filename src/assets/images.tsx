@@ -15,9 +15,10 @@ import first_1 from '../assets/images/first_1.png'
 import second_2 from '../assets/images/second_2.png'
 import third_3 from '../assets/images/third_3.png'
 import swapy from '../assets/images/swapy.png'
-
 const dummyImage = "https://randomuser.me/api/portraits/men/1.jpg";
 
+import loginBg from '../assets/images/loginbg.svg'
+import logobg from '../assets/images/logobg.png'
 
 const images = {
     logo,
@@ -39,7 +40,9 @@ const images = {
     first_1,
     second_2,
     third_3,
-    swapy
+    swapy,
+    loginBg,
+    logobg,
 }
 
 

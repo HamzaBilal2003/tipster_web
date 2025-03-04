@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TableFiltersCan from '../../../components/TableFiltersCan';
 import ItemGap from '../../../components/ItemGap';
 import Dropdown from '../../../components/DropDown';
@@ -9,11 +9,20 @@ import TableCan from '../../../components/TableCan';
 import PreRow from '../../predication/components/PreRow';
 import PostModal from '../components/PostModal';
 import PostRow from '../components/PostRow';
+import { SingleUserData } from '../../../../util/queries/userManagement';
 
-const PostsComponent = () => {
-  const [appliedFilters, setAppliedFilters] = useState<Record<string, any>>({});
+type Props = {
+  DataList: SingleUserData['data']['posts'];
+};
+
+const PostsComponent = ({ DataList }: Props) => {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filteredData, setFilteredData] = useState(DataList);
+  const [selectedDateFilter, setSelectedDateFilter] = useState<string>('');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('');
+
+  console.log("Tips data: ", DataList);
 
   const BulkAction = [
     { name: 'Export CSV', value: 'csv' },
@@ -23,7 +32,7 @@ const PostsComponent = () => {
 
   const Status = [
     { name: 'Approved', value: 'approved' },
-    { name: 'Pending', value: 'pending' },
+    { name: 'Under review', value: 'under_review' },
   ];
 
   const DateDropOptions = [
@@ -34,38 +43,55 @@ const PostsComponent = () => {
     { name: 'Last 60 Days', value: 'last-60-days' },
   ];
 
-  const bodyData = [
-    {
-      img: '/mnt/data/image.png',
-      name: 'Alucard',
-      postType: 'Post',
-      postContent: 'I am the best punter in the game.....',
-      date: '01-01-25 / 11:22 AM',
-      approval: 'Pending',
-      likes: 200,
-      comments: 230,
-      shares: 200,
-      views: '2.5k',
-      id: '001',
-    },
-    {
-      img: '/mnt/data/image.png',
-      name: 'Sarah Smith',
-      postType: 'Comment',
-      postContent: 'This is amazing! I totally agree...',
-      date: '01-01-25 / 10:30 AM',
-      approval: 'Pending',
-      likes: 150,
-      comments: 100,
-      shares: 90,
-      views: '1.8k',
-      id: '002',
-    },
-  ];
+  const handleFilter = () => {
+    let filtered = DataList;
 
-  const handleFilter = (value: any) => {
-    console.log(value);
+    if (selectedStatusFilter) {
+      filtered = filtered.filter((post) => post.status === selectedStatusFilter);
+    }
+    console.log("status filter : ",filtered)
+
+    if (selectedDateFilter) {
+      const today = new Date();
+      let startDate = new Date();
+      
+      switch (selectedDateFilter) {
+        case 'today':
+          startDate = new Date();
+          break;
+        case 'yesterday':
+          startDate.setDate(today.getDate() - 1);
+          break;
+        case 'last-7-days':
+          startDate.setDate(today.getDate() - 7);
+          break;
+        case 'last-30-days':
+          startDate.setDate(today.getDate() - 30);
+          break;
+        case 'last-60-days':
+          startDate.setDate(today.getDate() - 60);
+          break;
+        default:
+          startDate = new Date();
+      }
+      
+      filtered = filtered.filter((post) => new Date(post.created_at) >= startDate);
+    }
+
+    setFilteredData(filtered);
   };
+
+  const handleDateFilter = (value: string) => {
+    setSelectedDateFilter(value);
+  };
+
+  const handleStatusFilter = (value: string) => {
+    setSelectedStatusFilter(value);
+  };
+  useEffect(() => {
+    handleFilter();
+  }, [selectedDateFilter,selectedStatusFilter])
+  
 
   const handleViewPost = (postData: any) => {
     setSelectedPost(postData);
@@ -76,27 +102,21 @@ const PostsComponent = () => {
     setIsModalOpen(false);
   };
 
-  const handleApplyFilters = (filters: Record<string, any>) => {
-    console.log('Applied filters:', filters);
-    setAppliedFilters(filters);
-  };
-
   return (
     <div className='flex flex-col gap-6'>
       <TableFiltersCan>
         <ItemGap>
-          <Dropdown options={DateDropOptions} onChange={handleFilter} placeholder='Date' position='left-0' />
-          <Dropdown options={Status} onChange={handleFilter} placeholder='Approval Status' position='left-0' />
-          <Dropdown options={BulkAction} onChange={handleFilter} placeholder='Bulk Action' position='left-0' />
+          <Dropdown options={DateDropOptions} onChange={handleDateFilter} placeholder='Date' position='left-0' />
+          <Dropdown options={Status} onChange={handleStatusFilter} placeholder='Approval Status' position='left-0' />
+          <Dropdown options={BulkAction} onChange={() => {}} placeholder='Bulk Action' position='left-0' />
         </ItemGap>
         <div className='flex items-center gap-4'>
-          <FilterDropdown options={filterOptions} onApply={handleApplyFilters} />
-          <SearchFilter handleFunction={handleFilter} />
+          <SearchFilter handleFunction={() => {}} />
         </div>
       </TableFiltersCan>
       <TableCan
-        headerTr={['Post Type', 'Post', 'Date', "stat (C,L,S)",'Approval', 'Other']}
-        dataTr={bodyData}
+        headerTr={['Post Type', 'Post', 'Date', 'Stat (S,V)', 'Approval', 'Other']}
+        dataTr={filteredData}
         headerAlign='left'
         TrName={PostRow}
         trNameProps={{ onViewPost: handleViewPost }}

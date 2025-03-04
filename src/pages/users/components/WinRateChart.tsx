@@ -1,43 +1,58 @@
-// WinRateChart.js
 import React, { useEffect, useRef } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart } from "chart.js/auto";
 
 interface WinRateChartProps {
-  winRates: { date: string; winRate: number }[];
+  winRates: { month: string; winRate: number }[];
   overallWinRate: string;
   chartId?: string;
 }
 
 const WinRateChart: React.FC<WinRateChartProps> = ({ winRates, overallWinRate, chartId = "win-rate-chart" }) => {
-  const chartRef = useRef<Chart | null>(null);
+  const chartContainer = useRef<HTMLCanvasElement | null>(null);
+  const chartInstance = useRef<Chart | null>(null);
 
-  const chartData = {
-    labels: winRates.map((item) => item.date),
-    datasets: [
-      {
-        label: "Win Rate",
-        data: winRates.map((item) => item.winRate),
-        borderColor: "red",
-        backgroundColor: "#ff000072",
-        fill:true,
-        tension: 0, // Set tension to 0 for a sharp line
-      },
-    ],
-  };
+  useEffect(() => {
+    if (chartInstance.current) {
+      chartInstance.current.destroy(); // Destroy previous chart instance
+    }
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { ticks: { color: "black" } },
-      y: { ticks: { color: "black" } },
-    },
-    plugins: {
-      legend: { display: false },
-    },
-  };
+    if (chartContainer.current) {
+      chartInstance.current = new Chart(chartContainer.current, {
+        type: "line",
+        data: {
+          labels: winRates.map((item) => item.month),
+          datasets: [
+            {
+              label: "Win Rate",
+              data: winRates.map((item) => item.winRate),
+              borderColor: "red",
+              backgroundColor: "#ff000072",
+              fill: true,
+              tension: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color: "black" } },
+            y: { ticks: { color: "black" } },
+          },
+          plugins: {
+            legend: { display: false },
+          },
+        },
+      });
+    }
 
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+      }
+    };
+  }, [winRates]);
 
   return (
     <div className="bg-[white] text-black shadow shadow-gray-400 p-4 rounded-lg w-full">
@@ -46,7 +61,7 @@ const WinRateChart: React.FC<WinRateChartProps> = ({ winRates, overallWinRate, c
         <span className="text-yellow-400 font-bold">{overallWinRate}</span>
       </div>
       <div className="h-60">
-        <Line ref={chartRef} data={chartData} options={chartOptions} id={chartId} />
+        <canvas ref={chartContainer} id={chartId} />
       </div>
     </div>
   );

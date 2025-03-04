@@ -1,5 +1,8 @@
 import React from 'react'
 import ItemGap from './ItemGap';
+import FormatDate from './FormatDate';
+import { data } from 'react-router-dom';
+import { API_DOMAIN_images } from '../../util/apiConfig';
 
 type props = {
     name: string;
@@ -8,7 +11,7 @@ type props = {
     profileImage?: string
     subscriber?: number;
     follower?: number;
-    isSubcriberActive?: boolean;
+    isSubcriberActive: boolean;
     Nationality?: string | "Nigeria";
     email?: string;
     password?: string;
@@ -34,7 +37,7 @@ const ProfileCard = (props: props) => {
         },
         {
             "key": "Password",
-            "value": props.password,
+            "value": props.password?.toString(),
         },
         {
             "key": "phone",
@@ -46,11 +49,11 @@ const ProfileCard = (props: props) => {
         },
         {
             "key": "Date Register",
-            "value": props.registerDate,
+            "value": FormatDate(props.registerDate),
         },
         {
             "key": "Vip Status",
-            "value": props.isSubcriberActive ? "Active" : "Inactive",
+            "value": props.isSubcriberActive ? "Active" : 'Inactive',
         }
     ]
 
@@ -64,16 +67,16 @@ const ProfileCard = (props: props) => {
         return star
     }
     return (
-        <div className='shadow-sm shadow-gray-500 grid grid-cols-1 md:grid-cols-12 rounded-xl'>
-            <div className='md:col-span-4 p-8 flex justify-center'>
+        <div className='shadow-sm shadow-gray-500 grid grid-cols-1 lg:grid-cols-12 rounded-xl'>
+            <div className='lg:col-span-4 p-8 flex justify-center'>
                 <div className='flex items-center justify-start flex-col gap-2'>
-                    <img src='https://randomuser.me/api/portraits/men/1.jpg' alt='Profile Pic' className='rounded-full w-24 h-24' />
+                    <img src={API_DOMAIN_images + props.profileImage} alt='Profile Pic' className='rounded-full w-24 h-24' />
                     <h1 className='text-2xl font-bold'>{props.name}</h1>
                     {props.role && props.role == 'admin' && <h1 className='text-lg text-gray-400'>{props.role}</h1>}
 
                     {
                         props.role && props.role != 'admin' && <>
-                            <div className='flex items-center gap-2'>
+                            {/* <div className='flex items-center gap-2'>
                                 <div className='flex items-center gap-1'>
                                     <h1 className='text-lg'>{props.follower}</h1>
                                     <h1 className='text-lg font-bold text-gray-400'>Followers</h1>
@@ -83,17 +86,17 @@ const ProfileCard = (props: props) => {
                                     <h1 className='text-lg'>{props.subscriber}</h1>
                                     <h1 className='text-lg font-bold text-gray-400'>Subscriber</h1>
                                 </div>
-                            </div>
+                            </div> */}
                             <div className={`${props.isSubcriberActive ? "bg-[#A52A2A] text-white" : "bg-red-500 text-black"} rounded-full p-2 flex items-center gap-2 justify-center`}>
                                 {props.isSubcriberActive ? <i className="bi bi-patch-check"></i> : <i className="bi bi-patch-exclamation"></i>}
                                 <span>Subscription</span>
-                                {props.isSubcriberActive ? 'Active' : "InActive"}
+                                {props.isSubcriberActive ? "Active" : 'Inactive'}
                             </div>
                         </>
                     }
                 </div>
             </div>
-            <div className='md:col-span-8 bg-gray-50 p-8 flex'>
+            <div className='lg:col-span-8 bg-gray-50 p-8 flex flex-col lg:flex-row'>
                 <div className="grid grid-cols-2 gap-y-12 gap-x-8 w-full">
                     {ProfileData.map((data, index) => (
                         <div key={index} className="flex flex-col">
@@ -108,7 +111,7 @@ const ProfileCard = (props: props) => {
 
                     <button
                         className={`w-fit text-nowrap rounded-md capitalize px-4 py-2 cursor-pointer border bg-[#A52A2A] border-[#A52A2A] text-white`}
-                        onClick={() => props.onEdit(null)}
+                        onClick={() => props.onEdit(props)}
                     >
                         Edit Profile
                     </button>

@@ -1,26 +1,40 @@
 import React from 'react';
 import Dropdown from '../../../components/DropDown';
+import { API_DOMAIN_images } from '../../../../util/apiConfig';
 
 interface PostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  postData: any;
+  postData: {
+    id: number;
+    title: string | null;
+    content: string | null;
+    user_id: number;
+    has_image: number;
+    status: string;
+    created_at: string;
+    updated_at: string;
+    images: string;
+    share_count: number;
+    view_count: number;
+    type: string;
+  };
 }
 
 const PostModal: React.FC<PostModalProps> = ({ isOpen, onClose, postData }) => {
   if (!isOpen) return null;
-
+  console.log("Post data : ", postData);
   const renderImages = () => {
     if (!postData.images || postData.images.length === 0) return null;
 
-    const displayedImages = postData.images.slice(0, 4);
-    const remainingImages = postData.images.length - 4;
+    const displayedImages = postData.images.length < 4 ? JSON.parse(postData.images.slice(0, 4)) : JSON.parse( postData.images);
+    const remainingImages = postData.images.length < 4 ? postData.images.length - 4 :  1;
 
     return (
       <div className="grid grid-cols-2 gap-[5px] mt-3">
         {displayedImages.map((image, index) => (
           <div key={index} className="relative w-full h-28">
-            <img src={image} alt={`attachment-${index}`} className="w-full h-full object-cover rounded-md" />
+            <img src={ API_DOMAIN_images + image} alt={`attachment-${index}`} className="w-full h-full object-cover rounded-md" />
             {index === 3 && remainingImages > 0 && (
               <div className="absolute inset-0 bg-[#00000057] bg-opacity-50 flex items-center justify-center text-white font-semibold text-lg rounded-md">
                 +{remainingImages}
@@ -46,21 +60,21 @@ const PostModal: React.FC<PostModalProps> = ({ isOpen, onClose, postData }) => {
         <div className='p-4 space-y-6'>
           {/* Post Content */}
           <div className='bg-gray-100 p-4 rounded-lg'>
-            <div className='flex gap-2 items-center'>
-              <img src={postData?.img} alt='User' className='h-10 w-10 rounded-full' />
+            {/* <div className='flex gap-2 items-center'>
+              <img src={postData?.user_id} alt='User' className='h-10 w-10 rounded-full' />
               <div>
                 <p className='font-bold'>{postData?.name}</p>
                 <p className='text-sm text-gray-500'>{postData?.date}</p>
               </div>
-            </div>
-            <p className='mt-2 text-black'>{postData?.postContent}</p>
+            </div> */}
+            <p className='mt-2 text-black'>{postData?.content}</p>
             {renderImages()}
-            <div className='flex justify-evenly gap-4 mt-3 text-gray-600'>
+            {/* <div className='flex justify-evenly gap-4 mt-3 text-gray-600'>
               <span className='flex items-center gap-1'><i className='bi bi-hand-thumbs-up'></i> {postData?.likes}</span>
               <span className='flex items-center gap-1'><i className='bi bi-chat'></i> {postData?.comments}</span>
               <span className='flex items-center gap-1'><i className='bi bi-share'></i> {postData?.shares}</span>
               <span className='flex items-center gap-1'><i className='bi bi-eye'></i> {postData?.views}</span>
-            </div>
+            </div> */}
           </div>
 
           {/* Approval Status */}
@@ -69,14 +83,14 @@ const PostModal: React.FC<PostModalProps> = ({ isOpen, onClose, postData }) => {
             <Dropdown
               FullWidth={true}
               isNotActiveBg={true}
-              options={[{ name: 'Pending', value: 'Pending' }, { name: 'Approved', value: 'Approved' }]}
+              options={[{ name: 'Under review', value: 'under_review' }, { name: 'Approved', value: 'approved' }]}
               onChange={() => { }}
-              placeholder={postData?.approval || 'Pending'}
+              placeholder={postData?.status}
               borderColor='gray-300'
             />
           </div>
 
-          <button className='w-full cursor-pointer py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors'>
+          <button onClick={onClose} className='w-full cursor-pointer py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors'>
             Save
           </button>
         </div>

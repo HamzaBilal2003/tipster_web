@@ -1,26 +1,32 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import MoreDropdown from "../../../components/MoreDropdown";
+import { API_DOMAIN_images } from "../../../../util/apiConfig";
 
 interface UserRowProps {
     displayData: {
-        img?: string;
-        name: string;
+        id: number;
+        username: string;
         email: string;
-        phone: string;
-        status: boolean;
-        dob: string;
-        reg_date: string;
-        isOnline: boolean;
-        subscription: boolean;
-        last_login: string
+        profile_picture: string | null;
+        is_active: number;
+        vip_status: string;
+        created_at: string;
+        phone:string;
     };
     index: number;
     onEditUser?: (data: any) => void;
 }
 
-const UserRow: React.FC<UserRowProps> = ({ displayData, index,onEditUser }) => {
-
+const UserRow: React.FC<UserRowProps> = ({ displayData, index, onEditUser }) => {
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }).replace(/\//g, '-');
+      };
     return (
         <tr
             className={`hover:bg-[#ececec] hover:cursor-pointer`}
@@ -38,15 +44,11 @@ const UserRow: React.FC<UserRowProps> = ({ displayData, index,onEditUser }) => {
                     />
                     <div className="flex items-center gap-2">
                         <img
-                            src={
-                                displayData.img
-                                    ? displayData.img
-                                    : `https://randomuser.me/api/portraits/men/4${index}.jpg`
-                            }
+                            src={ API_DOMAIN_images + displayData?.profile_picture}
                             alt="profile"
                             className="h-8 w-8 rounded-full"
                         />
-                        <span className="text-black">{displayData.name}</span>
+                        <span className="text-black">{displayData.username}</span>
                     </div>
                 </div>
             </td>
@@ -54,10 +56,10 @@ const UserRow: React.FC<UserRowProps> = ({ displayData, index,onEditUser }) => {
             {/* Email , Phone , dob , reg_date */}
             <td className="px-4 py-2 text-black">{displayData.email}</td>
             <td className="px-4 py-2 text-black">{displayData.phone}</td>
-            <td className="px-4 py-2 text-black">{displayData.last_login}</td>
-            <td className="px-4 py-2 text-black">{displayData.reg_date}</td>
+            {/* <td className="px-4 py-2 text-black">{displayData.last_login}</td> */}
+            <td className="px-4 py-2 text-black">{formatDate(displayData.created_at)}</td>
 
-            {/* isOnline Status Indicator */}
+            {/* isOnline Status Indicator
             <td className="px-4 py-2">
                 <div className={`flex items-center justify-center gap-2 p-2 py-1 rounded-full `}>
                     <div
@@ -65,17 +67,17 @@ const UserRow: React.FC<UserRowProps> = ({ displayData, index,onEditUser }) => {
                     >
                     </div>
                 </div>
-            </td>
+            </td> */}
 
 
             {/* subscription Indicator */}
             <td className="px-4 py-2">
-                <div className={`flex items-center gap-2 p-1 px-2 rounded-full ${displayData.subscription ? "bg-[#0080004a] text-[#008000]" : "bg-[#ff00003e] text-[#FF0000]"}`}>
+                <div className={`flex items-center w-fit mx-auto gap-2 p-1 px-2 rounded-full ${displayData.vip_status == 'active' ? "bg-[#0080004a] text-[#008000]" : "bg-[#ff00003e] text-[#FF0000]"}`}>
                     <div
-                        className={`h-3 w-3 rounded-full ${displayData.subscription ? "bg-green-500" : "bg-[#FF0000]"}`}
+                        className={`h-3 w-3 capitalize rounded-full ${displayData.vip_status == 'active'  ? "bg-green-500" : "bg-[#FF0000]"}`}
                     >
                     </div>
-                    {displayData.subscription ? "Active" : "Inactive"}
+                    {(displayData.vip_status).replace('_','').toUpperCase()}
                 </div>
             </td>
 
@@ -86,16 +88,13 @@ const UserRow: React.FC<UserRowProps> = ({ displayData, index,onEditUser }) => {
                     menuClass="bg-white min-w-[150px]"
                 >
                     <div className="p-2 flex flex-col gap-2">
-                        <Link to={`/users/${displayData.name}/profile`} className="px-2 py-4 text-left rounded-lg cursor-pointer hover:bg-gray-100">
+                        <Link to={`/users/${displayData.id}/profile`} className="px-2 py-4 text-left rounded-lg cursor-pointer hover:bg-gray-100">
                             User Detials
                         </Link>
-                        <button onClick={() => onEditUser && onEditUser(displayData)} className="px-2 py-4 text-left rounded-lg cursor-pointer hover:bg-gray-100">
-                            Edit Detials
-                        </button>
-                        <div className="w-full h-[2px] bg-gray-300"></div>
+                        {/* <div className="w-full h-[2px] bg-gray-300"></div>
                         <button className="px-2 py-4 text-left rounded-lg cursor-pointer hover:bg-gray-100">
                             Ban
-                        </button>
+                        </button> */}
                     </div>
                 </MoreDropdown>
             </td>

@@ -4,6 +4,8 @@ import images from '../../assets/images'
 import { ChartGraph } from '../../components/ChartGraph'
 import { PostsFeed } from './componets/PostsFeed'
 import UserDiv from './componets/UserDiv'
+import { useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 
 const Dashboard = () => {
     const statsData = [
@@ -29,7 +31,6 @@ const Dashboard = () => {
             color: '#D51C92'
         },
     ]
-
     const mockData = [
         { month: 'Jan', users: 1800, subscribers: 200 },
         { month: 'Feb', users: 300, subscribers: 700 },
@@ -89,6 +90,27 @@ const Dashboard = () => {
         },
     ];
 
+    const formData = {
+        "name": "Hamza",
+        "avatar": "https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/721.jpg",
+        "Title": "testing api integration",
+        "Description": "this is to see update on the api",
+    }
+
+    const { data , isError , error } = useQuery({
+        queryKey: ['posts'],
+        queryFn: async () => {
+            // return await axios.put('https://67c3b13689e47db83dd247e0.mockapi.io/api/posts/1',formData);
+            return await axios.get('https://67c3b13689e47db83dd247e0.mockapi.io/api/posts');
+            // return await axios.delete('https://67c3b13689e47db83dd247e0.mockapi.io/api/posts/2');
+        }
+    })
+    if (isError) {
+        console.log(error);
+    }else {
+        console.log(data?.data);
+    }
+
 
     return (
         <>
@@ -113,7 +135,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <UserDiv/>
+            <UserDiv />
         </>
 
     )

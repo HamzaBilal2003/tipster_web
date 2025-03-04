@@ -2,12 +2,14 @@ import React from 'react'
 import Dropdown from '../../../components/DropDown'
 import TableCan from '../../../components/TableCan'
 import SettingRow from '../../setting/components/SettingRow'
-
+import { SingleUserData } from '../../../../util/queries/userManagement'
 type props = {
-    userId: string
+    userId: string;
+    DataList: SingleUserData['data']['userActivity']
 }
 
-const ActivityComponent = ({ userId }: props) => {
+const ActivityComponent = ({ userId ,DataList }: props) => {
+    console.log("activity",DataList)
 
     const activity = [
         { activity: "User 1 logged in", date: "26-2-2025 / 12:30 PM", },
@@ -40,8 +42,9 @@ const ActivityComponent = ({ userId }: props) => {
                 position='left-0'
             />
             <TableCan
-                headerTr={['Account Activities','date','Other']}
-                dataTr={activity}
+            // others
+                headerTr={['Account Activities','date']}
+                dataTr={DataList}
                 headerAlign='left'
                 TrName={SettingRow}
             />
