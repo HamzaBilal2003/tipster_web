@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import StatsCard from '../../components/StatsCard';
 import images from '../../assets/images';
 import TableFiltersCan from '../../components/TableFiltersCan';
@@ -7,43 +7,46 @@ import Dropdown from '../../components/DropDown';
 import SearchFilter from '../../components/SearchFilter';
 import TableCan from '../../components/TableCan';
 import PreRow from './components/PreRow';
+import { fetchTipsData } from '../../../util/queries/TipQueries';
+import Cookies from 'js-cookie';
+import { useQuery } from '@tanstack/react-query';
+import TipModal from '../users/components/TipModal';
+import { Tip } from '../../../util/queries/TipQueries';
+import { API_DOMAIN } from '../../../util/apiConfig';
 import FilterDropdown from '../../components/FilterDropdown';
-import TipDetailsModal from './components/TipDetailsModal;';
-// import { filterOptions } from '../../components/FilterJson';
-
+import Loarder from '../../components/Loarder';
+interface Company {
+    id: number;
+    title: string;
+}
 const Predication = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTip, setSelectedTip] = useState<any>(null);
     const [appliedFilters, setAppliedFilters] = useState<Record<string, any>>({});
+    const [FilterBodyData, setFilterBodyData] = useState<Tip[] | null>(null);
+    const [DateFilter, setDateFilter] = useState<string | null>();
+    const [searchUser, setSearchUser] = useState<string>('');
+    const [status, setstatus] = useState('')
 
+    const token = Cookies.get('authToken');
     const onViewTip = (tipData: any) => {
         setSelectedTip(tipData);
         setIsModalOpen(true);
     };
 
-    const statsData = [
-        {
-            title: 'Total Users',
-            value: "2,600",
-            change: 5,
-            icon: images.sidebarIcons.user,
-            color: 'red'
-        },
-        {
-            title: 'Total Tipsters',
-            value: "250",
-            change: "10",
-            icon: images.sidebarIcons.user,
-            color: '#1C26D5'
-        },
-        {
-            title: 'Total Tips',
-            value: "260",
-            change: "10",
-            icon: images.sidebarIcons.user,
-            color: '#1C26D5'
-        },
-    ];
+    const { data: Tipdata, isLoading } = useQuery({
+        queryKey: ['allTipsData'],
+        queryFn: () => fetchTipsData(token || ''),
+    });
+    useEffect(() => {
+        if (!isLoading && Tipdata) {
+            setFilterBodyData(Tipdata?.data.tips);
+        }
+    }, [isLoading, Tipdata]);
+
+    console.log("Tips data : ", Tipdata)
+    const statsData = Tipdata?.data.stats;
+    const TableBodyData = Tipdata?.data.tips;
 
     const BulkAction = [
         { name: "Export CSV", value: "csv", },
@@ -142,21 +145,150 @@ const Predication = () => {
         }
     ];
 
-    const handleFilter = (value: any) => {
+    const handleDate = (value: any) => {
         console.log(value);
+        setDateFilter(value);
+    };
+    const handlestatus = (value: string) => {
+        setstatus(value)
+    }
+    const handleSearch = (value: string) => {
+        console.log(value);
+        setSearchUser(value);
     };
 
     const handleApplyFilters = (filters: Record<string, any>) => {
         console.log('Applied filters:', filters);
         setAppliedFilters(filters);
+    };
+    const handleFilter = (value: string) => {
+        console.log("bulk function", value);
+    }
 
-        // Here you would typically filter your data based on the selected filters
+
+    const { data: companies, isCompanyLoading, error } = useQuery<Company[]>({
+        queryKey: ["companies"],
+        queryFn: async () => {
+            try {
+                const response = await fetch(`${API_DOMAIN}betting-company/get-all`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch companies");
+                }
+                const result = await response.json();
+                return result.data.map((company: Company) => ({
+                    value: company.id,
+                    label: company.title,
+                }));
+            } catch (error) {
+                console.error("Error fetching companies:", error);
+                throw error;
+            }
+        },
+    });
+    const filterOptions = [
+        {
+            id: "odds",
+            label: "Odds",
+            type: "range",
+            min: 0,
+            max: 1000,
+        },
+        {
+            id: "bettingCompany",
+            label: "Betting Company",
+            type: "checkbox",
+            options: companies, // ✅ Now correctly waits for data
+        },
+        {
+            id: "winRate",
+            label: "Win Rate",
+            type: "range",
+            min: 0,
+            max: 100,
+        },
+        {
+            id: "category",
+            label: "Category",
+            type: "checkbox",
+            options: [
+                { id: "football", label: "Football" },
+                { id: "basketball", label: "Basketball" },
+                { id: "tennis", label: "Tennis" },
+                { id: "hockey", label: "Hockey" },
+            ],
+        },
+    ];
+
+    const HandleAllFilter = () => {
+        let filtered = TableBodyData;
+
+        if (status) {
+            filtered = filtered.filter((tip) => tip.status === status);
+        }
+
+        if (appliedFilters.bettingCompany && appliedFilters.bettingCompany.length > 0) {
+            filtered = filtered.filter((tip) => appliedFilters.bettingCompany.includes(tip.betting_company_id.toString()));
+        }
+
+        if (appliedFilters.winRate) {
+            filtered = filtered.filter((tip) => tip.user.win_rate >= appliedFilters.winRate[0] && tip.user.win_rate <= appliedFilters.winRate[1]);
+        }
+        if (appliedFilters.odds) {
+            filtered = filtered.filter((tip) => parseInt(tip.ods) >= appliedFilters.odds.min && parseInt(tip.ods) <= appliedFilters.odds.max);
+        }
+
+        if (searchUser && searchUser.length > 0) {
+            filtered = filtered.filter((tip) => tip.user.username.toLowerCase().includes(searchUser.toLowerCase()));
+        }
+
+        if (DateFilter) {
+            const today = new Date();
+            let startDate = new Date();
+
+            switch (DateFilter) {
+                case 'today':
+                    startDate = new Date();
+                    break;
+                case 'yesterday':
+                    startDate.setDate(today.getDate() - 1);
+                    break;
+                case 'last-7-days':
+                    startDate.setDate(today.getDate() - 7);
+                    break;
+                case 'last-30-days':
+                    startDate.setDate(today.getDate() - 30);
+                    break;
+                case 'last-60-days':
+                    startDate.setDate(today.getDate() - 60);
+                    break;
+                default:
+                    startDate = new Date();
+            }
+
+            filtered = filtered.filter((tip) => new Date(tip.match_date) >= startDate);
+        }
+        if (searchUser && searchUser != '') {
+            filtered = filtered.filter((tip) => tip.user.username.toLowerCase().includes(searchUser.toLowerCase()));
+        }
+        setFilterBodyData(filtered);
     };
 
+    useEffect(() => {
+        HandleAllFilter()
+    }, [DateFilter, status, appliedFilters, searchUser])
+
+    if (isLoading) return <Loarder/>;
     return (
         <div className='flex flex-col gap-6'>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                {statsData.map((data, index) => (
+                {!isLoading && statsData?.map((data, index) => (
                     <StatsCard
                         key={index}
                         title={data.title}
@@ -172,13 +304,13 @@ const Predication = () => {
                 <ItemGap>
                     <Dropdown
                         options={DateDropOptions}
-                        onChange={handleFilter}
+                        onChange={handleDate}
                         placeholder="Date"
                         position='left-0'
                     />
                     <Dropdown
                         options={Status}
-                        onChange={handleFilter}
+                        onChange={handlestatus}
                         placeholder="Approval Status"
                         position='left-0'
                     />
@@ -190,30 +322,32 @@ const Predication = () => {
                     />
                 </ItemGap>
                 <div className='flex items-center gap-4'>
-                    {/* <FilterDropdown
+                    <FilterDropdown
                         options={filterOptions}
                         onApply={handleApplyFilters}
-                    /> */}
+                    />
                     <SearchFilter
-                        handleFunction={handleFilter}
+                        handleFunction={(e: string) => handleSearch(e)}
                     />
                 </div>
             </TableFiltersCan>
-            <TableCan
-                headerTr={["user", "company", "odds", "code", "win rate", "Date", "status", "approval", "other"]}
-                dataTr={bodyData}
+            {/*  win rate removed */}
+            {!isLoading && FilterBodyData && <TableCan
+                headerTr={["user", "company", "odds", "code", "Date", "status", "approval", "other"]}
+                dataTr={FilterBodyData}
                 headerAlign='left'
                 TrName={PreRow}
                 trNameProps={{
                     onViewTip: onViewTip
                 }}
-            />
+            />}
 
-            <TipDetailsModal
+            {!isLoading && selectedTip && <TipModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 tipData={selectedTip}
-            />
+                dataFetchName={'allTipsData'}
+            />}
         </div>
     );
 };

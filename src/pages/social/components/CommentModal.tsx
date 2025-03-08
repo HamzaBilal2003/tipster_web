@@ -19,7 +19,7 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, comments }
 
     return (
         <div className="fixed inset-0 bg-[#00000061] bg-opacity-50 flex items-center justify-center z-[1000]">
-            <div className="bg-white max-w-[500px] p-5 rounded-lg shadow-lg relative ">
+            <div className="bg-white min-w-md  p-5 rounded-lg shadow-lg relative ">
                 <div className="border-b border-gray-400 flex items-center justify-between gap-4 pb-4">
                     <h2 className="text-xl font-bold">Comments ({comments.length})</h2>
                     {/* Close Button */}
@@ -44,10 +44,10 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, comments }
                                     <div className="flex gap-3 items-center">
                                         <button className="text-green-500 text-sm font-medium cursor-pointer">Approve</button>
                                         <button className="text-red-500 text-sm font-medium cursor-pointer">Delete</button>
-                                        <div className="flex items-center gap-1">
+                                        {/* <div className="flex items-center gap-1">
                                             <i className="bi bi-hand-thumbs-up text-xl text-gray-600"></i>
                                             <span>{comment.likes}</span>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </div>
                             </div>

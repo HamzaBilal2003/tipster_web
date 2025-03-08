@@ -44,6 +44,10 @@ type props = {
     };
   }[];
 }
+interface Company {
+  id: number;
+  title: string;
+}
 
 const TipsComponent = ({ userId, DataList }: props) => {
   const [appliedFilters, setAppliedFilters] = useState<Record<string, any>>({});
@@ -168,10 +172,7 @@ const TipsComponent = ({ userId, DataList }: props) => {
   };
   const token = Cookies.get("authToken");
 
-  interface Company {
-    id: number;
-    title: string;
-  }
+  
 
   const { data: companies, isLoading, error } = useQuery<Company[]>({
     queryKey: ["companies"],
@@ -341,6 +342,7 @@ const TipsComponent = ({ userId, DataList }: props) => {
         isOpen={isModalOpen}
         onClose={closeModal}
         tipData={selectedTip}
+        dataFetchName={'usersProfile'}
       />}
     </div>
   )

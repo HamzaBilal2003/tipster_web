@@ -12,6 +12,7 @@ import { users } from '../../assets/Data';
 import Cookies from 'js-cookie';
 import { useQuery } from '@tanstack/react-query';
 import { fetchUsers } from '../../../util/queries/userManagement'
+import Loarder from '../../components/Loarder';
 interface selectedUser {
     id: number;
     username: string;
@@ -79,11 +80,12 @@ const UserManagement = () => {
         })
         setAppliedFilters(serachUser)
     }
+    if (isLoading) return <Loarder/>
 
     return (
         <div className='flex flex-col gap-6'>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                {!isLoading && statsData?.map((data, index) => (
+                {statsData?.map((data, index) => (
                     <StatsCard
                         key={index}
                         title={data.title}
@@ -118,10 +120,10 @@ const UserManagement = () => {
                     />
                 </ItemGap>
                 <SearchFilter
-                    handleFunction={handleSearch}
+                    handleFunction={ (e : string)=> handleSearch(e)}
                 />
             </TableFiltersCan>
-            {!isLoading && bodyTable && <TableCan
+            <TableCan
                 // bodyTable "status",
                 headerTr={['name', 'email', 'phone', "reg date", "subscription", "other"]}
                 headerAlign={'left'}
@@ -130,7 +132,7 @@ const UserManagement = () => {
                 trNameProps={{
                     onEditUser: onEditUser
                 }}
-            />}
+            />
 
             <UserModal
                 isOpen={isModalOpen}
@@ -138,6 +140,7 @@ const UserManagement = () => {
                 onSave={handleSaveUser}
                 userData={selectedUser}
                 isEdit={isEditMode}
+                dataFetchName={'users'}
             />
         </div>
     );

@@ -1,19 +1,33 @@
 import React from 'react'
+import { API_DOMAIN_images } from '../../../../util/apiConfig';
+import { postData } from './SocialData';
 
-type Post = {
-    id?: string;
-    ProfileImage?: string;
-    postDescription: string;
-    username?: string
-}
 
 type Props = {
-    PostData: Post[];
+    PostData: {
+        id: number;
+        user: {
+            id: number;
+            username: string;
+            profile_picture: string;
+        };
+        timestamp: string;
+        content: string;
+        type: string;
+        likes_count: number;
+        comments_count: number;
+        share_count: number;
+        view_count: number;
+        recent_comments: any[];
+    }[];
 }
 
 const PostTable = ({ PostData }: Props) => {
+    console.log('================ data ====================');
+    console.log(postData);
+    console.log('================ data ====================');
     return (
-        <div className='h-[500px] overflow-auto my-4 specific-scroll rounded-md shadow-md shadow-gray-400'>
+        <div className='max-h-[500px] overflow-auto my-4 specific-scroll rounded-md shadow-md shadow-gray-400'>
             <table className="w-full rounded-md shadow-md shadow-gray-400 overflow-hidden">
                 <thead className='bg-[#FFDADA]'>
                     <tr className='sticky top-0'>
@@ -27,14 +41,14 @@ const PostTable = ({ PostData }: Props) => {
                             <tr className='' key={index}>
                                 <td className='p-4'>
                                     <div className='flex items-center gap-4 text-justify'>
-                                        <img src={post.ProfileImage} alt={post.username} className='w-10 h-10 rounded-full' />
+                                        <img src={post.user.profile_picture && API_DOMAIN_images + post.user.profile_picture } alt={post.user.username} className='w-10 h-10 rounded-full' />
                                         <span>
-                                            {post.postDescription}
+                                            {post.content}
                                         </span>
                                     </div>
                                 </td>
                                 <td className='p-4'>
-                                    <div className='flex items-center justify-center'>
+                                    <div className='flex items-center'>
                                         <button className='py-2 px-4 rounded-md bg-[#008000] text-nowrap text-white'>
                                             View Post
                                         </button>

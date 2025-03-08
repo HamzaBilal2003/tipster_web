@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import Dropdown from '../../../components/DropDown';
 import images from '../../../assets/images';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { UpdateTipFetch } from '../../../../util/mutations/TipsMutation';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
+import { API_DOMAIN_images } from '../../../../util/apiConfig';
 
 interface TipModalProps {
   isOpen: boolean;
@@ -37,9 +38,10 @@ interface TipModalProps {
       last_five: Array<string>;
     };
   };
+  dataFetchName:string
 }
 
-const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
+const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData,dataFetchName }) => {
   const [selectedDate, setSelectedDate] = useState<string>(tipData?.match_date);
   const [approvalStatus, setApprovalStatus] = useState<string>(tipData.status);
   const [betStatus, setBetStatus] = useState<string>(tipData.result);
@@ -49,29 +51,22 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
   const [category, setCategory] = useState<string>(tipData?.betting_category);
 
   const token = Cookies.get('authToken');
-  console.log("tipData : " , tipData)
+  console.log("tipData from Model: " , tipData)
   const BetStatusOptions = [
     { name: 'Running', value: 'running' },
     { name: 'Won', value: 'won' },
     { name: 'Lost', value: 'lost' },
   ];
+  const queryClient = useQueryClient()
 
   const { mutate: updateTipMutation, isPending, error } = useMutation({
     mutationKey: ['updateTip'],
     mutationFn: () => UpdateTipFetch({ status: approvalStatus, result: betStatus },tipData.id, token),
     onSuccess: (data : any) => {
       console.log(data)
+      queryClient.invalidateQueries({ queryKey: [dataFetchName] });
       onClose();
-      toast('Tip updated successfully', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+      toast('Tip updated successfully');
     },
     onError: (error: any) => {
       console.log(error);
@@ -93,7 +88,7 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
       <div className="bg-white rounded-lg w-full max-w-md mx-auto">
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl font-bold">Tip Details</h2>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200">
+          <button onClick={onClose} className="cursor-pointer p-1 rounded-full hover:bg-gray-200">
             <i className='bi bi-x-circle text-xl'></i>
           </button>
         </div>
@@ -101,11 +96,14 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
         <div className="p-4 space-y-6">
           <div className="space-y-2">
             <label className="block text-gray-700 font-medium">Betting Company</label>
-            <input
-              type="text"
-              value={tipData.betting_company.title}
-              className="p-3 bg-gray-100 rounded-lg w-full outline-none"
-            />
+            <div className='flex items-center pl-2 bg-gray-300 rounded-md'>
+              <img src={API_DOMAIN_images + tipData.betting_company.logo} alt="" />
+              <input
+                type="text"
+                value={tipData.betting_company.title}
+                className="p-3  rounded-lg w-full outline-none"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -113,13 +111,13 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
             <input
               type="text"
               value={tipData.ods}
-              className="p-3 bg-gray-100 rounded-lg w-full outline-none"
+              className="p-3 bg-gray-300 rounded-lg w-full outline-none"
             />
           </div>
 
           <div className="space-y-2">
             <label className="block text-gray-700 font-medium">Booking code</label>
-            <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-300 rounded-lg">
               <input
                 type="text"
                 value={tipData.codes}
@@ -136,13 +134,13 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
             <input
               type="text"
               value={tipData.betting_category}
-              className="p-3 bg-gray-100 rounded-lg w-full outline-none"
+              className="p-3 bg-gray-300 rounded-lg w-full outline-none"
             />
           </div>
 
           <div className="space-y-2">
             <label className="block text-gray-700 font-medium">Date</label>
-            <div className="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-300 rounded-lg">
               <input
                 type="text"
                 value={tipData.match_date}
@@ -153,11 +151,11 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
 
           <div className="space-y-2">
             <label className="block text-gray-700 font-medium">Approval Status</label>
-            <div className="flex items-center justify-between bg-gray-100 rounded-lg">
+            <div className="flex items-center justify-between bg-gray-300 rounded-lg pr-2">
               <select
                 value={approvalStatus}
                 onChange={(e) => setApprovalStatus(e.target.value)}
-                className="bg-transparent outline-none w-full p-3"
+                className="outline-none w-full p-3"
               >
                 <option value="approved">Approved</option>
                 <option value="pending">Pending</option>
@@ -167,7 +165,7 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData }) => {
 
           <div className="space-y-2">
             <label className="block text-gray-700 font-medium">Bet Status</label>
-            <div className="flex items-center justify-between bg-gray-100 rounded-lg">
+            <div className="flex items-center justify-between bg-gray-300 rounded-lg pr-2">
               <select
                 value={betStatus}
                 onChange={(e) => setBetStatus(e.target.value)}

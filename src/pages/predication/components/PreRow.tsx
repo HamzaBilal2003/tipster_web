@@ -1,27 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import MoreDropdown from "../../../components/MoreDropdown";
+import { Tip } from "../../../../util/queries/TipQueries";
+import { API_DOMAIN, API_DOMAIN_images } from "../../../../util/apiConfig";
+import FormatDate from "../../../components/FormatDate";
 
 interface UserRowProps {
-    displayData: {
-        img?: string;
-        name: string;
-        Walletimg: string;
-        WalletName: string;
-        odds: string;
-        code: string;
-        winRate: string;
-        date: string;
-        status: string;
-        approval: boolean;
-        id?: string;
-    };
+    displayData: Tip;
     index: number;
     onViewTip?: (data: any) => void;
 }
 
 const PreRow: React.FC<UserRowProps> = ({ displayData, index,onViewTip }) => {
-
+    console.log("single tip data" , displayData)
     return (
         <tr
             className={`hover:bg-[#ececec] hover:cursor-pointer`}
@@ -39,15 +30,11 @@ const PreRow: React.FC<UserRowProps> = ({ displayData, index,onViewTip }) => {
                     />
                     <div className="flex items-center gap-2">
                         <img
-                            src={
-                                displayData.img
-                                    ? displayData.img
-                                    : `https://randomuser.me/api/portraits/men/4${index}.jpg`
-                            }
+                            src={ API_DOMAIN_images + displayData.user.profile_picture}
                             alt="profile"
                             className="h-8 w-8 rounded-full"
                         />
-                        <span className="text-black">{displayData.name}</span>
+                        <span className="text-black">{displayData.user.username}</span>
                     </div>
                 </div>
             </td>
@@ -55,41 +42,37 @@ const PreRow: React.FC<UserRowProps> = ({ displayData, index,onViewTip }) => {
 
                 <div className="flex items-center gap-2">
                     <img
-                        src={
-                            displayData.Walletimg
-                                ? displayData.Walletimg
-                                : `https://randomuser.me/api/portraits/men/4${index}.jpg`
-                        }
+                        src={API_DOMAIN_images +  displayData.betting_company.logo}
                         alt="profile"
                         className="h-8 w-8 rounded-full"
                     />
-                    <span className="text-black">{displayData.WalletName}</span>
+                    <span className="text-black">{displayData.betting_company.title}</span>
                 </div>
             </td>
 
             {/* Email , Phone , dob , reg_date */}
-            <td className="px-4 py-2 text-black">{displayData.odds}</td>
+            <td className="px-4 py-2 text-black">{displayData.ods}</td>
             <td className="px-4 py-2 text-black">
                 <div className="flex items-center justify-center gap-2">
-                    {displayData.code}
+                    {displayData.codes}
                     <button
                         className="text-gray-500 cursor-pointer hover:text-gray-700"
-                        onClick={() => navigator.clipboard.writeText(displayData.code)}
+                        onClick={() => navigator.clipboard.writeText(displayData.codes)}
                     >
                         <i className="bi bi-copy"></i>
                     </button>
                 </div>
             </td>
-            <td className="px-4 py-2 text-black text-center">{displayData.winRate}%</td>
-            <td className="px-4 py-2 text-black">{displayData.date}</td>
+            {/* <td className="px-4 py-2 text-black text-center">{displayData.winRate}%</td> */}
+            <td className="px-4 py-2 text-black">{FormatDate(displayData.created_at)}</td>
 
             <td className="px-4 py-2">
-                <div className={`text-center capitalize gap-2 p-1 px-2 rounded-full ${displayData.status == 'running' ? "bg-yellow-500 text-black" : displayData.status == 'lost' ? "bg-red-500 text-white" : "bg-green-500 text-white"}`}>
-                    {displayData.status}
+                <div className={`text-center capitalize gap-2 p-1 px-2 rounded-full ${displayData.result == 'running' ? "bg-yellow-500 text-black" : displayData.status == 'lost' ? "bg-red-500 text-black" : "bg-green-500 text-black"}`}>
+                    {displayData.result}
                 </div>
             </td>
             <td className="px-4 py-2">
-                <div className={`flex items-center capitalize gap-2 p-1 px-2 rounded-full ${displayData.approval ? " text-green-500" : "text-[#FFA500]"}`}>
+                <div className={`flex items-center capitalize gap-2 p-1 px-2 text-center rounded-full ${displayData.status == 'pending' ? " text-[red]" : "text-green-500" }`} >
                     {displayData.status}
                 </div>
             </td>

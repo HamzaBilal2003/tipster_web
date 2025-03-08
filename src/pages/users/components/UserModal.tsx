@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { API_DOMAIN, API_DOMAIN_images } from "../../../../util/apiConfig";
 import { toast } from "react-toastify";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 
 interface UserModalProps {
@@ -10,6 +10,7 @@ interface UserModalProps {
   onSave: (userData: any) => void;
   userData: any;
   isEdit?: boolean;
+  dataFetchName:string;
 }
 
 const nationalities = [
@@ -31,9 +32,11 @@ const UserModal: React.FC<UserModalProps> = ({
   onSave,
   userData,
   isEdit = false,
+  dataFetchName
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isLoading,Setisloading] = useState(false)
   const [formData, setFormData] = useState({
     username: userData?.name || "",
     email: userData?.email || "",
@@ -59,6 +62,7 @@ const UserModal: React.FC<UserModalProps> = ({
   };
 
   const token = Cookies.get("authToken");
+  const queryClient = useQueryClient();
 
   const updateUserMutation = useMutation({
     mutationKey: ["updateUser"],
@@ -80,9 +84,12 @@ const UserModal: React.FC<UserModalProps> = ({
     onSuccess: (data: any) => {
       toast.success("User profile updated successfully!");
       onSave(data);
+      queryClient.invalidateQueries({ queryKey: [dataFetchName] });
+      Setisloading(false)
       onClose();
     },
     onError: (error: any) => {
+      Setisloading(false)
       toast.error(error?.message || "Failed to update user profile");
     },
   });
@@ -104,8 +111,7 @@ const UserModal: React.FC<UserModalProps> = ({
     if (formData.password) {
       updatedData.password = formData.password;
     }
-
-    // Submit the data
+    Setisloading(true)
     updateUserMutation.mutate(updatedData);
   };
 
@@ -241,8 +247,8 @@ const UserModal: React.FC<UserModalProps> = ({
           </div>
 
           <div className="p-4">
-            <button type="submit" className="cursor-pointer w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-md font-medium">
-              {isEdit ? "Save Changes" : "Register"}
+            <button disabled={isLoading} type="submit" className="cursor-pointer w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-md font-medium">
+              {isEdit ?  isLoading ? "Saving User..." : "Save Changes" : "Register"}
             </button>
           </div>
         </form>

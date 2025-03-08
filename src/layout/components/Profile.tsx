@@ -11,7 +11,7 @@ const Profile: React.FC<ProfileProps> = () => {
   const userData = JSON.parse(Cookies.get('user') as string);
   return (
     <div className="flex items-center gap-2">
-      <img src={`${API_DOMAIN_images+ userData?.profile_picture}`} alt="profile" className="w-14 h-14 rounded-full" />
+      <img src={`${API_DOMAIN_images+ (userData?.profile_picture).replace('https://tipster.hmstech.org/storage/','')}`} alt="profile" className="w-14 h-14 rounded-full" />
       <div>
         <h4 className="text-lg font-bold">Hey, {userData?.username}</h4>
       </div>

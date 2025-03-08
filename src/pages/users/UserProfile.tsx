@@ -8,6 +8,7 @@ import { fetchSingleUsers } from '../../../util/queries/userManagement'
 import Cookies from 'js-cookie'
 import { useQuery } from '@tanstack/react-query'
 import { SingleUserData } from '../../../util/queries/userManagement'
+import Loarder from '../../components/Loarder'
 
 type userData = SingleUserData['data']['user']
 const UserProfile = () => {
@@ -24,9 +25,9 @@ const UserProfile = () => {
   };
 
   const { data: ResponseData, error, isLoading } = useQuery({
-    queryKey: ['users'],
+    queryKey: ['usersProfile'],
     queryFn: () => fetchSingleUsers(token, username),
-    refetchInterval: 3000
+    refetchInterval: 1000 * 60 * 5,
   })
   console.log(ResponseData);
   console.log("user data", ResponseData?.data.user)
@@ -37,9 +38,9 @@ const UserProfile = () => {
   const handleSaveUser = (userData: any) => {
     console.log('Saving user data:', userData);
   };
+  if (isLoading) return <Loarder/>
   return (
     <div className='flex flex-col gap-6'>
-      {!isLoading && userData && <>
         <ProfileCard
           name={userData?.username}
           role="user"
@@ -57,15 +58,14 @@ const UserProfile = () => {
           onEdit={onEditUser}
         />
         <Main userId={"1"} DataList={TableData} />
-        {!isLoading  && selectedUser &&  <UserModal
+        {selectedUser &&  <UserModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveUser}
           userData={selectedUser}
           isEdit={isEditMode}
+          dataFetchName={'usersProfile'}
         />}
-      </>
-      }
     </div>
   )
 }
