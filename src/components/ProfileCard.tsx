@@ -102,7 +102,7 @@ const ProfileCard = (props: props) => {
                         <div key={index} className="flex flex-col">
                             <p className="text-lg capitalize font-semibold text-gray-500">{data.key}</p>
                             <p className="text-xl text-black">
-                                {data.key === "Password" ? HandleHide(data.value.length) : data.value}
+                                {data.key === "Password" ? HandleHide(5) : data.value}
                             </p>
                         </div>
                     ))}

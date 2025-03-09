@@ -9,6 +9,7 @@ import TableCan from '../../components/TableCan';
 import NotificationRow from './components/NotificationRow';
 import NotifcationCan from './components/NotifcationCan';
 import { fetchNotifications, fetchAppActivities, Notification, AppActivity } from '../../../util/mutations/notification';
+import { toast } from 'react-toastify';
 
 const Notifications = () => {
   const [currentDateFilter, setCurrentDateFilter] = useState<string>('');
@@ -45,14 +46,14 @@ const Notifications = () => {
 
   const filterNotifications = (data: Notification[]) => {
     if (!data) return [];
-    
+
     let filtered = [...data];
 
     // Apply date filter
     if (currentDateFilter) {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
+
       switch (currentDateFilter) {
         case 'today':
           filtered = filtered.filter(item => {
@@ -124,9 +125,10 @@ const Notifications = () => {
     // if (window.confirm('Are you sure you want to delete this notification?')) {
     //   await deleteMutation.mutateAsync(id);
     // }
+    toast.success('Deleted successfullY')
   };
 
-  const handleSubmit = async (notification: any) => {
+  const handleSubmit = async (notification: number) => {
     // if (notification.id) {
     //   await updateMutation.mutateAsync({
     //     id: notification.id,
@@ -134,6 +136,7 @@ const Notifications = () => {
     //   });
     // }
     // setEditNotification(null);
+    toast.success('Deleted successfully')
   };
 
   const filteredNotifications = notifications?.data ? filterNotifications(notifications.data) : [];
@@ -180,7 +183,7 @@ const Notifications = () => {
         <div>Loading...</div>
       ) : (
         <TableCan
-          headerTr={["Notification", "Date", "Attachment", "Action"]}
+          headerTr={["Notification", "Date", "Attachment"]}
           dataTr={filteredNotifications}
           headerAlign='left'
           TrName={NotificationRow}

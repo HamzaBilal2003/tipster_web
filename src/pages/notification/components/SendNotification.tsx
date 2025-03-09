@@ -37,7 +37,7 @@ const useSendNotification = () => {
     mutationKey: ["sendNotification"],
     mutationFn: async (formData: FormData) => {
       return await apiCall({
-        url: API_ENDPOINTS.Notifcation.create, // Define this in `apiConfig`
+        url: API_ENDPOINTS.Notifcation.create,
         method: "POST",
         data: formData,
         token: token,
@@ -48,13 +48,13 @@ const useSendNotification = () => {
     },
     onSuccess: () => {
       toast.success("Notification sent successfully!");
-      queryClient.invalidateQueries({ queryKey: ["notifications"] }); // Refresh notification list
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
     onError: (error) => {
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
         Object.keys(errors).forEach((key) => {
-          toast.error(errors[key][0]); // Show validation errors
+          toast.error(errors[key][0]);
         });
       } else {
         toast.error(error.message || "Failed to send notification.");
@@ -67,7 +67,8 @@ const SendNotification: React.FC<SendNotificationProps> = ({
   editNotification,
   resetEditMode,
 }) => {
-  const sendNotification = useSendNotification(); // Initialize mutation
+  const sendNotification = useSendNotification();
+  const [audienceSelectdata, setaudienceSelectdata] = useState<number[]>([]);
 
   const allUsers: User[] = [
     { id: 1, name: "Alucard", avatar: "https://via.placeholder.com/150" },
@@ -104,6 +105,7 @@ const SendNotification: React.FC<SendNotificationProps> = ({
   const openAudienceModal = () => {
     setTempSelectedUsers([...selectedUsers]);
     setShowAudienceModal(true);
+    setaudienceSelectdata(selectedUsers.map((item) => item.id));
     setSelectAll(allUsers.length === selectedUsers.length && selectedUsers.length > 0);
   };
 
@@ -114,6 +116,7 @@ const SendNotification: React.FC<SendNotificationProps> = ({
   const applyAudienceSelection = () => {
     setSelectedUsers([...tempSelectedUsers]);
     setNotification((prev) => ({ ...prev, audience: tempSelectedUsers }));
+    setaudienceSelectdata(tempSelectedUsers.map(user => user.id));
     setShowAudienceModal(false);
   };
 
@@ -134,7 +137,11 @@ const SendNotification: React.FC<SendNotificationProps> = ({
     const formData = new FormData();
     formData.append("message", notification.content);
     formData.append("heading", notification.heading);
-    formData.append("user_ids", JSON.stringify(selectedUsers));
+    
+    // Properly append user_ids as an array
+    audienceSelectdata.forEach((userId, index) => {
+      formData.append(`user_ids[${index}]`, userId.toString());
+    });
 
     if (selectedFile) {
       formData.append("attachment", selectedFile);
@@ -157,6 +164,7 @@ const SendNotification: React.FC<SendNotificationProps> = ({
     });
     setSelectedUsers([]);
     setSelectedFile(null);
+    setaudienceSelectdata([]);
     resetEditMode();
   };
 
@@ -164,7 +172,13 @@ const SendNotification: React.FC<SendNotificationProps> = ({
   const handleAttachmentUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const allowedTypes = ["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
 
       if (!allowedTypes.includes(file.type)) {
         toast.error("Invalid file type. Allowed: jpg, png, pdf, doc, docx");
@@ -190,9 +204,6 @@ const SendNotification: React.FC<SendNotificationProps> = ({
           handleAttachmentUpload={handleAttachmentUpload}
         />
 
-        {/* File Upload */}
-        {/* <input type="file" accept=".jpg,.png,.pdf,.doc,.docx" onChange={handleAttachmentUpload} className="mt-3"/> */}
-
         {/* Submit Button */}
         <button
           type="submit"
@@ -215,7 +226,11 @@ const SendNotification: React.FC<SendNotificationProps> = ({
         allUsers={allUsers}
         tempSelectedUsers={tempSelectedUsers}
         selectAll={selectAll}
-        toggleSelectAll={() => setSelectAll(!selectAll)}
+        toggleSelectAll={() => {
+          const newSelectAll = !selectAll;
+          setSelectAll(newSelectAll);
+          setTempSelectedUsers(newSelectAll ? [...allUsers] : []);
+        }}
         toggleUserSelection={(userId) =>
           setTempSelectedUsers((prev) =>
             prev.some((user) => user.id === userId)

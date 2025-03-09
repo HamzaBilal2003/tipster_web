@@ -1,4 +1,3 @@
-import NotifcationCan from "../src/pages/notification/components/NotifcationCan";
 
 const API_DOMAIN = 'https://tipster.hmstech.org/api/';
 const API_DOMAIN_images = 'https://tipster.hmstech.org/storage/';
@@ -6,6 +5,9 @@ const API_DOMAIN_images = 'https://tipster.hmstech.org/storage/';
 const API_ENDPOINTS = {
   AUTH: {
     Login: API_DOMAIN + 'auth/login',
+  },
+  Dashboard: {
+    data: API_DOMAIN + "admin/get-dashboard-data",
   },
   UserManagement: {
     getUsersData: API_DOMAIN + "admin/get-user-management-data",
@@ -28,6 +30,12 @@ const API_ENDPOINTS = {
   },
   Notifcation: {
     create: API_DOMAIN + "admin/notifications/create"
+  },
+
+  BettingCompany: {
+    craete: API_DOMAIN + "betting-company/create",
+    get: API_DOMAIN + 'betting-company/get-all',
+    updateCompany: API_DOMAIN + 'betting-company/get-all/'
   },
   Support: {
     chat: API_DOMAIN + "admin/get-chats-for-admin",
