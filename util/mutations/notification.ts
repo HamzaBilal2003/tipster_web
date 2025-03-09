@@ -17,7 +17,7 @@ export const fetchNotifications = async () => {
 };
 
 export const fetchAppActivities = async () => {
-  const response = await axios.get(`${API_BASE_URL}app-activities`, {
+  const response = await axios.get(`${API_BASE_URL}admin/get-app-actiity`, {
     headers: {
       Authorization: `Bearer ${token}`, // Attach Token
       "Content-Type": "application/json",

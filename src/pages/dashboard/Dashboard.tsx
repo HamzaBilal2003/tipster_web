@@ -6,31 +6,13 @@ import { PostsFeed } from './componets/PostsFeed'
 import UserDiv from './componets/UserDiv'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
+import { fetchDashboardData } from '../../../util/queries/Dashboard'
+import Cookies from 'js-cookie'
+import Loarder from '../../components/Loarder'
+import { fetchPostData } from '../../../util/queries/PostQueries'
 
 const Dashboard = () => {
-    const statsData = [
-        {
-            title: 'Total Users',
-            value: "2,600",
-            change: 5,
-            icon: images.sidebarIcons.user,
-            color: 'red'
-        },
-        {
-            title: 'Total Tipsters',
-            value: "250",
-            change: "10",
-            icon: images.sidebarIcons.user,
-            color: '#1C26D5'
-        },
-        {
-            title: 'Subscription Revenue',
-            value: "N 22,600",
-            change: "10",
-            icon: images.sidebarIcons.user,
-            color: '#D51C92'
-        },
-    ]
+    const token = Cookies.get('authToken');
     const mockData = [
         { month: 'Jan', users: 1800, subscribers: 200 },
         { month: 'Feb', users: 300, subscribers: 700 },
@@ -89,6 +71,20 @@ const Dashboard = () => {
             content: 'I think playing these games at these period can be......'
         },
     ];
+    const { data: DashboardInfo, isLoading, error } = useQuery({
+        queryKey: ['dashboard'],
+        queryFn: () => fetchDashboardData(token)
+    })
+    console.log(DashboardInfo)
+    const statsData = DashboardInfo?.stats.map(stat => ({
+        ...stat,
+        icon:
+            stat.title === "Total Users" ? images.sidebarIcons.user :
+                stat.title === "Total TipSters" ? images.sidebarIcons.user :
+                    stat.title === "Subscription Revenue" ? images.money :
+                        stat.icon,
+    }));
+    console.log('table data : ', DashboardInfo?.users)
 
     const formData = {
         "name": "Hamza",
@@ -96,26 +92,17 @@ const Dashboard = () => {
         "Title": "testing api integration",
         "Description": "this is to see update on the api",
     }
+    const { data: Tipdata, isLoading :postLoading } = useQuery({
+        queryKey: ['allPostData'],
+        queryFn: () => fetchPostData(token || ''),
+    });
+    const ApprovedPost = Tipdata?.data.stats.approvedPost
 
-    const { data , isError , error } = useQuery({
-        queryKey: ['posts'],
-        queryFn: async () => {
-            // return await axios.put('https://67c3b13689e47db83dd247e0.mockapi.io/api/posts/1',formData);
-            return await axios.get('https://67c3b13689e47db83dd247e0.mockapi.io/api/posts');
-            // return await axios.delete('https://67c3b13689e47db83dd247e0.mockapi.io/api/posts/2');
-        }
-    })
-    if (isError) {
-        console.log(error);
-    }else {
-        console.log(data?.data);
-    }
-
-
+    if (isLoading) return <Loarder />
     return (
         <>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                {statsData.map((data, index) => (
+                {!isLoading && statsData.map((data, index) => (
                     <StatsCard
                         key={index}
                         title={data.title}
@@ -131,11 +118,11 @@ const Dashboard = () => {
                     <ChartGraph data={mockData} />
                 </div>
                 <div className='md:col-span-5'>
-                    <PostsFeed PostData={mockPosts} />
+                   {!postLoading && <PostsFeed PostData={ApprovedPost} />}
                 </div>
             </div>
 
-            <UserDiv />
+            <UserDiv Datalist={DashboardInfo?.users} />
         </>
 
     )

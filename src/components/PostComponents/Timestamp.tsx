@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface TimestampProps {
-  timestamp: string;
+  timestamp: any;
 }
 
 export function Timestamp({ timestamp }: TimestampProps) {

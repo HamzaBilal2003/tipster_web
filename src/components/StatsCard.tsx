@@ -21,7 +21,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, change, icon, color
                 <div className='flex flex-col gap-4'>
                     <h2 className="text-xl font-semibold" style={textSizeHeading ? { fontSize: `${textSizeHeading}px` } : undefined}>{title}</h2>
                     <p className="text-4xl font-bold text-gray-900 "  style={textSizeHeading ? { fontSize: `${textSizeValue}px` ,color:color } : {color:color}}>{value}</p>
-                    {change && <span style={{ color: parseInt(change.toString()) > 0 ? 'green' : 'red' }}>{change} <span className='text-black'>% from last week</span></span>}
+                    {change && <span style={{ color: parseInt(change.toString()) > 0 ? 'green' : 'red' }}>{change} <span className='text-black'> from last week</span></span>}
                 </div>
                 {icon &&
                     <div

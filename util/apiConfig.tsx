@@ -1,11 +1,12 @@
-import NotifcationCan from "../src/pages/notification/components/NotifcationCan";
-
 const API_DOMAIN = 'https://tipster.hmstech.org/api/';
 const API_DOMAIN_images = 'https://tipster.hmstech.org/storage/';
 
 const API_ENDPOINTS = {
   AUTH: {
     Login: API_DOMAIN + 'auth/login',
+  },
+  Dashboard: {
+    data : API_DOMAIN + "admin/get-dashboard-data",
   },
   UserManagement:{
     getUsersData: API_DOMAIN + "admin/get-user-management-data",

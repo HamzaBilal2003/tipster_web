@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom"; // Removed useNavigate as it's not used
+import { Link, useLocation, useRoutes } from "react-router-dom"; // Removed useNavigate as it's not used
 import LinkComp from "./components/Link";
 import images from "../assets/images";
 import { Sidebar_links } from "../assets/Data";
+import Cookies from "js-cookie";
 
 interface SidebarProps {
   setMobileOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -17,7 +18,11 @@ interface SidebarLink {
 const Sidebar: React.FC<SidebarProps> = ({ setMobileOpen }) => {
   const location = useLocation();
   const [activeLink, setActiveLink] = useState<string>("/dashboard");
-
+  const handleLogout = ()=>{
+    Cookies.remove('user');
+    Cookies.remove('authToken');
+    window.location.href = '/';
+  }
   useEffect(() => {
     setActiveLink(location.pathname);
   }, [location.pathname]);
@@ -60,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({ setMobileOpen }) => {
         </nav>
       </div>
       <div className="p-4 mt-4 flex items-center justify-center">
-        <button className="flex items-center p-2 gap-2 text-[#FF0000] font-bold rounded-lg w-full">
+        <button onClick={handleLogout} className="flex items-center p-2 gap-2 text-[#FF0000] font-bold rounded-lg w-full">
           <img src={images.sidebarIcons.logout} alt="logout" className={"w-[30px]"} />
           <span className="text-xl">Logout</span>
         </button>
