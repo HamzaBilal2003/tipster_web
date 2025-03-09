@@ -4,10 +4,18 @@ import UserChat from './components/UserChat';
 import SearchFilter from '../../components/SearchFilter';
 import images from '../../assets/images';
 import ChatCan from './ChatComponents/ChatCan';
-
+import Cookies from 'js-cookie'
+import { useQuery } from '@tanstack/react-query';
+import { fetchChats } from './../../../util/queries/support'
 const Support = () => {
     const [selectedUserChat, setselectedUserChat] = useState<any>()
-
+    // const {}
+    const token = Cookies.get('authToken');
+    const Admin = JSON.parse(Cookies.get('user'));
+    const { data: Tipdata, isLoading } = useQuery({
+        queryKey: ['allchats'],
+        queryFn: () => fetchChats(token || ''),
+    });
     const chatsData = [
         {
             id: 1,
@@ -42,7 +50,7 @@ const Support = () => {
             UserImage: "https://randomuser.me/api/portraits/men/6.jpg"
         }
     ];
-    
+
     const [filterData, setFilterData] = useState<any[]>(chatsData);
     const handleFilter = (value: string) => {
         console.log("Search Username: ", value);
@@ -61,12 +69,13 @@ const Support = () => {
                     <SearchFilter
                         Placeholder='Search'
                         bgColor='bg-[#ECECEC]'
-                        handleFunction={()=>handleFilter}
+                        handleFunction={() => handleFilter}
                     />
                     <div className='h-[600px] overflow-auto space-y-4 divide-gray-400'>
-                        {filterData.length !== 0 ? (
-                            filterData.map((chat, index) => (
+                        {!isLoading && Tipdata?.length !== 0 ? (
+                            Tipdata?.map((chat, index) => (
                                 <UserChat
+                                    chatId={chat.id}
                                     key={index}
                                     UserId={chat.id}
                                     UserName={chat.name}
@@ -85,7 +94,7 @@ const Support = () => {
             </div>
             {selectedUserChat && <div className='md:col-span-8'>
                 <SupportHeader username={selectedUserChat.UserName} ProfileImg={selectedUserChat.UserImage} />
-                <ChatCan/>
+                <ChatCan chatId={selectedUserChat.chatId} />
             </div>}
         </div>
     );

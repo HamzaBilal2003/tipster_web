@@ -7,28 +7,32 @@ const API_ENDPOINTS = {
   AUTH: {
     Login: API_DOMAIN + 'auth/login',
   },
-  UserManagement:{
+  UserManagement: {
     getUsersData: API_DOMAIN + "admin/get-user-management-data",
     SingleUserData: API_DOMAIN + "admin/user/",
   },
-  tips : {
+  tips: {
     UpdateTip: API_DOMAIN + "admin/tip/update/",
     getAlltips: API_DOMAIN + "admin/tip/get-all"
   },
-  post:{
+  post: {
     getAllPostData: API_DOMAIN + "admin/get-post-management-data",
     deletePost: API_DOMAIN + "posts/delete-post/",
     approvePost: API_DOMAIN + "posts/approvePost/",
-    createPost : API_DOMAIN + "posts/create",
+    createPost: API_DOMAIN + "posts/create",
   },
-  rank :{
-    getRankPrice : API_DOMAIN + "admin/rank/get-winners-amount",
+  rank: {
+    getRankPrice: API_DOMAIN + "admin/rank/get-winners-amount",
     updateRankPrice: API_DOMAIN + 'admin/rank/update-winner-amount',
-    getUsersRank : API_DOMAIN + 'admin/rank/get-top-10-rankings',
+    getUsersRank: API_DOMAIN + 'admin/rank/get-top-10-rankings',
   },
-  Notifcation : {
-    create : API_DOMAIN + "admin/notifications/create"
+  Notifcation: {
+    create: API_DOMAIN + "admin/notifications/create"
+  },
+  Support: {
+    chat: API_DOMAIN + "admin/get-chats-for-admin",
+    messages: API_DOMAIN + "admin/get-messages-for-admin"
   }
 };
 
-export { API_DOMAIN, API_ENDPOINTS ,API_DOMAIN_images};
+export { API_DOMAIN, API_ENDPOINTS, API_DOMAIN_images };

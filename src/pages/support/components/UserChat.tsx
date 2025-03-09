@@ -2,6 +2,7 @@ import React from 'react'
 import images from '../../../assets/images';
 
 type props = {
+    chatId?:string | number;
     UserImage?: string;
     UserName: string;
     LastMessage: string;
@@ -13,6 +14,7 @@ type props = {
 
 const UserChat = ({
     UserId,
+    chatId,
     UserImage = images.dummyImage,
     UserName,
     LastMessage,
@@ -32,6 +34,7 @@ const UserChat = ({
                 LastMessage,
                 LastMessageTime,
                 LastMessageCount,
+                chatId
             })}
         >
             <div className='flex items-center gap-3'>
