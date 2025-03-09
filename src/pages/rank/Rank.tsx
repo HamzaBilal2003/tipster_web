@@ -1,237 +1,223 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
 import RankGraph from './component/RankGraph';
-import images from '../../assets/images';
 import TableFiltersCan from '../../components/TableFiltersCan';
 import ItemGap from '../../components/ItemGap';
 import Dropdown from '../../components/DropDown';
 import SearchFilter from '../../components/SearchFilter';
 import TableCan from '../../components/TableCan';
-import SubRow from '../subscription/components/SubRow';
 import RankRow from './component/RankRow';
 import AccountDetailsModal from './component/AccountDetailsModal';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetchranks } from '../../../util/queries/rank';
+import Cookies from 'js-cookie';
+import Loader from '../../components/Loarder';
 
-type displayData = {
-  select: boolean;
-  name: string;
-  rank: "1";
-  img?: string;
-  winRate: string;
-  point: string;
-  AmountWon: string;
-  paymentStatus: string;
-  id?: string;
-  bankName?: string;
-  accountNumber?: string;
-}
+type Winner = {
+  user_id: number;
+  username: string;
+  profile_picture: string | null;
+  rank: number;
+  points: number;
+  win_rate: string;
+  win_amount: string;
+  currency: string;
+  bank_account: {
+    id: number;
+    user_id: number;
+    bank_name: string;
+    account_number: string;
+    account_name: string;
+    created_at: string;
+    updated_at: string;
+  } | null;
+  paid_status: boolean;
+};
+
 const Rank = () => {
-  const [selectedAccount, setselectedAccount] = useState<displayData>({
-    select: false,
-    name: "John Doe",
-    rank: "1",
-    img: images.dummyImage,
-    winRate: "85%",
-    point: "1200",
-    AmountWon: "100000",
-    paymentStatus: "paid",
-    id: "1",
-    bankName: "ABC Bank",
-    accountNumber: "1234567890"
-  })
+  const [selectedAccount, setSelectedAccount] = useState<Winner | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filterData, setFilterData] = useState<Winner[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
-  const rankData = [
-    {
-      "id": "1",
-      "username": "John Doe",
-      "rankCount": 1200,
-      "percentage": "85%",
-      "position": "1st",
-      "profileImage": images.dummyImage
-    },
-    {
-      "id": "2",
-      "username": "Jane Smith",
-      "rankCount": 1100,
-      "percentage": "82%",
-      "position": "2nd",
-      "profileImage": images.dummyImage
-    },
-    {
-      "id": "3",
-      "username": "Michael Johnson",
-      "rankCount": 1050,
-      "percentage": "78%",
-      "position": "3rd",
-      "profileImage": images.dummyImage
-    }
-  ]
+  const queryClient = useQueryClient();
+  const token = Cookies.get('authToken');
+
   const DateDropOptions = [
-    { name: "Today", value: "today" },
-    { name: "Yesterday", value: "yesterday" },
-    { name: "Last 7 Days", value: "last-7-days" },
-    { name: "Last 30 Days", value: "last-30-days" },
-    { name: "Last 60 Days", value: "last-60-days" },
+    { name: 'Today', value: 'today' },
+    { name: 'Yesterday', value: 'yesterday' },
+    { name: 'Last 7 Days', value: 'last-7-days' },
+    { name: 'Last 30 Days', value: 'last-30-days' },
+    { name: 'Last 60 Days', value: 'last-60-days' },
   ];
-  const Status = [
-    { name: "paid", value: "paid" },
-    { name: "pending", value: "pending" },
+
+  const StatusOptions = [
+    { name: 'Paid', value: 'paid' },
+    { name: 'Pending', value: 'pending' },
   ];
-  const bodyData = [
-    {
-      "select": false,
-      "name": "John Doe",
-      "rank": "1",
-      "img": "https://randomuser.me/api/portraits/men/1.jpg",
-      "winRate": "85%",
-      "point": "1500",
-      "AmountWon": "N 10,000",
-      "paymentStatus": "paid",
-      "id": "001",
-      "bankName":"dummy bank",
-      "accountNumber":"123123123123123"
+
+  const { data: userRankList, isLoading,refetch } = useQuery({
+    queryKey: ['ranklist'],
+    queryFn: () => fetchranks(token),
+    onSuccess: (data) => {
+      setFilterData(data.data); // Initialize filtered data
     },
-    {
-      "select": false,
-      "name": "Sarah Smith",
-      "rank": "1",
-      "img": "https://randomuser.me/api/portraits/women/2.jpg",
-      "winRate": "90%",
-      "point": "1800",
-      "AmountWon": "N 12,000",
-      "paymentStatus": "Pending",
-      "id": "002",
-      "bankName":"dummy bank",
-      "accountNumber":"123123123123123"
-    },
-    {
-      "select": false,
-      "name": "Michael Brown",
-      "rank": "1",
-      "img": "https://randomuser.me/api/portraits/men/3.jpg",
-      "winRate": "78%",
-      "point": "1400",
-      "AmountWon": "N 8,500",
-      "paymentStatus": "paid",
-      "id": "003",
-      "bankName":"dummy bank",
-      "accountNumber":"123123123123123"
-    },
-    {
-      "select": false,
-      "name": "Jessica Lee",
-      "rank": "1",
-      "img": "https://randomuser.me/api/portraits/women/4.jpg",
-      "winRate": "92%",
-      "point": "1900",
-      "AmountWon": "N 15,000",
-      "paymentStatus": "Pending",
-      "id": "004",
-      "bankName":"dummy bank",
-      "accountNumber":"123123123123123"
-    },
-    {
-      "select": false,
-      "name": "David Wilson",
-      "rank": "1",
-      "img": "https://randomuser.me/api/portraits/men/5.jpg",
-      "winRate": "80%",
-      "point": "1600",
-      "AmountWon": "N 9,500",
-      "paymentStatus": "paid",
-      "id": "005",
-      "bankName":"dummy bank",
-      "accountNumber":"123123123123123"
-    },
-    {
-      "select": false,
-      "name": "Olivia Taylor",
-      "rank": "1",
-      "img": "https://randomuser.me/api/portraits/women/6.jpg",
-      "winRate": "88%",
-      "point": "1700",
-      "AmountWon": "N 11,500",
-      "paymentStatus": "Pending",
-      "id": "006",
-      "bankName":"dummy bank",
-      "accountNumber":"123123123123123"
-    },
-    {
-      "select": false,
-      "name": "James Anderson",
-      "rank": "1",
-      "img": "https://randomuser.me/api/portraits/men/7.jpg",
-      "winRate": "84%",
-      "point": "1550",
-      "AmountWon": "N 10,200",
-      "paymentStatus": "paid",
-      "id": "007",
-      "bankName":"dummy bank",
-      "accountNumber":"123123123123123"
+  });
+
+  // Arrange Top 3 Winners
+  const arrangeTopThreeWinners = (winners: Winner[] = []): Winner[] => {
+    const top3 = winners.slice(0, 3);
+    if (!top3 || top3.length !== 3) return top3 || [];
+
+    return [
+      top3.find((w) => w.rank === 2)!,
+      top3.find((w) => w.rank === 1)!,
+      top3.find((w) => w.rank === 3)!,
+    ];
+  };
+
+  // **Handle Filter Updates (Date & Payment Status)**
+  const handleFilter = (filterValue: string) => {
+    if (!userRankList?.data) return;
+
+    if (DateDropOptions.some((option) => option.value === filterValue)) {
+      setSelectedDate(filterValue); // Update date filter
+    } else if (StatusOptions.some((option) => option.value === filterValue)) {
+      setSelectedStatus(filterValue); // Update status filter
     }
-  ];
+  };
 
-  const [FilterData, setFilterData] = useState(bodyData);
+  // **Handle Search**
+  const handleSearch = (searchValue: string) => {
+    setSearchTerm(searchValue);
+  };
 
-  const handleMarkFunction = (id :string)=>{
-    // update payment status paid
-    const updatedData = FilterData.map((item) => {
-      if (item.id === id) {
-        return {...item, paymentStatus: "paid" };
+  // **Apply Filters & Search**
+  useEffect(() => {
+    if (!userRankList?.data) return;
+
+    let filtered = [...userRankList.data];
+
+    // Apply Date Filter (Dummy Logic: Customize as needed)
+    if (selectedDate) {
+      console.log('Filtering by Date:', selectedDate);
+      // Add your date-based filtering logic here
+    }
+
+    // Apply Payment Status Filter
+    if (selectedStatus) {
+      filtered = filtered.filter(
+        (item) =>
+          (item.paid_status && selectedStatus === 'paid') ||
+          (!item.paid_status && selectedStatus === 'pending')
+      );
+    }
+
+    // Apply Search Filter
+    if (searchTerm.trim()) {
+      filtered = filtered.filter((item) =>
+        item.username.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    setFilterData(filtered);
+  }, [userRankList?.data, selectedDate, selectedStatus, searchTerm]);
+
+  // Handle Account Click
+  const handleAccountClick = (account: Winner) => {
+    setSelectedAccount(account);
+    setIsModalOpen(true);
+    refetch();
+  };
+
+  // Close Modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedAccount(null);
+    refetch()
+  };
+
+  // Handle Mark as Paid
+  const handleMarkFunction = async (id: string) => {
+    if (!filterData) return;
+
+    const updatedData = filterData.map((item) => {
+      if (item.user_id.toString() === id) {
+        return { ...item, paid_status: true };
       }
       return item;
     });
+
     setFilterData(updatedData);
-    setIsModalOpen(false)
-  }
-  const handleAccountClick = (account : displayData) => {
-    setselectedAccount(account);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
     setIsModalOpen(false);
+
+    await queryClient.invalidateQueries({ queryKey: ['ranklist'] });
   };
 
+  const topThreeWinners = arrangeTopThreeWinners(userRankList?.data);
 
-  const handleFilter = (value: string) => {
-    console.log(value);
-  }
   return (
-    <div className='flex flex-col gap-6'>
-      <RankGraph handleFilter={handleFilter} FirstThree={rankData} />
-      <div className='my-4'></div>
+    <div className="flex flex-col gap-6">
+      <RankGraph handleFilter={handleFilter} FirstThree={topThreeWinners} />
+      <div className="my-4"></div>
+
+      {/* Filters Section */}
       <TableFiltersCan>
         <ItemGap>
+          {/* Date Filter */}
           <Dropdown
             options={DateDropOptions}
             onChange={handleFilter}
             placeholder="Date"
-            position='left-0'
+            position="left-0"
           />
+          {/* Payment Status Filter */}
           <Dropdown
-            options={Status}
+            options={StatusOptions}
             onChange={handleFilter}
-            placeholder="Payemnt Status"
-            position='left-0'
+            placeholder="Payment Status"
+            position="left-0"
           />
         </ItemGap>
-        <SearchFilter
-          handleFunction={handleFilter}
-        />
+        {/* Search Filter */}
+        <SearchFilter handleFunction={handleSearch} />
       </TableFiltersCan>
 
-      <TableCan
-        headerTr={["rank", "name", "win rate", "point", "amount won", "payment status", "Other"]}
-        dataTr={FilterData}
-        headerAlign='left'
-        TrName={RankRow}
-        trNameProps={{
-          onAccountView: (acount: displayData) => handleAccountClick(acount) ,
-        }}
-      />
-      <AccountDetailsModal isOpen={isModalOpen} onClose={handleCloseModal} onSubmit={(id:string)=>handleMarkFunction(id)} account={selectedAccount} />
-    </div>
-  )
-}
+      {/* Table Section */}
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <TableCan
+          headerTr={[
+            'Rank',
+            'Name',
+            'Win Rate',
+            'Points',
+            'Amount Won',
+            'Payment Status',
+            'Other',
+          ]}
+          dataTr={filterData}
+          headerAlign="left"
+          TrName={RankRow}
+          trNameProps={{
+            onAccountView: handleAccountClick,
+          }}
+        />
+      )}
 
-export default Rank
+      {/* Account Details Modal */}
+      {selectedAccount && (
+        <AccountDetailsModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSubmit={handleMarkFunction}
+          account={selectedAccount}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Rank;

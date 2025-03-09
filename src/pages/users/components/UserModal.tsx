@@ -23,7 +23,8 @@ const nationalities = [
   "Indian",
   "Pakistani",
   "Japanese",
-  "Mexican"
+  "Mexican",
+  "Nigerian"
 ];
 
 const UserModal: React.FC<UserModalProps> = ({

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import SendNotification from './components/SendNotification';
 import TableFiltersCan from '../../components/TableFiltersCan';
 import Dropdown from '../../components/DropDown';
@@ -7,71 +8,26 @@ import SearchFilter from '../../components/SearchFilter';
 import TableCan from '../../components/TableCan';
 import NotificationRow from './components/NotificationRow';
 import NotifcationCan from './components/NotifcationCan';
+import { fetchNotifications, fetchAppActivities, Notification, AppActivity } from '../../../util/mutations/notification';
 
-interface User {
-  id: string;
-  name: string;
-  avatar: string;
-  selected?: boolean;
-}
-interface NotificationData {
-  id?: string;
-  heading: string;
-  content: string;
-  audience: User[];
-  timestamp?: string;
-  attachment?: string[];
-}
-const Notification = () => {
-  // State for notifications
-  const [notifications, setNotifications] = useState<NotificationData[]>([
-    {
-      id: '1',
-      heading: 'Welcome to the platform',
-      content: 'User 1 logged in',
-      timestamp: '26-2-2025 / 12:30 PM',
-      attachment: [],
-      audience: []
-    },
-    {
-      id: '2',
-      heading: 'Session ended',
-      content: 'User 2 logged out',
-      timestamp: '26-2-2025 / 11:45 PM',
-      attachment: [],
-      audience: []
-    }
-  ]);
-  const notificationHistory = [
-    { id: "1", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "2", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "3", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "4", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "5", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "4", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "5", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "4", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "5", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "4", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "5", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "4", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-    { id: "5", user: "Alucard", action: "just created a post", timestamp: "11:22 AM" },
-  ];
+const Notifications = () => {
+  const [currentDateFilter, setCurrentDateFilter] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [editNotification, setEditNotification] = useState<Notification | null>(null);
+  const queryClient = useQueryClient();
 
-  // State for filtering and searching
-  const [filteredNotifications, setFilteredNotifications] = useState<NotificationData[]>(notifications);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
+  // Fetch notifications
+  const { data: notifications, isLoading: isLoadingNotifications } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: fetchNotifications
+  });
 
-  // State for editing
-  const [editNotification, setEditNotification] = useState<NotificationData | null>(null);
+  // Fetch app activities
+  const { data: activities, isLoading: isLoadingActivities } = useQuery({
+    queryKey: ['activities'],
+    queryFn: fetchAppActivities
+  });
 
-  // Filter options
-  const BulkAction = [
-    { name: "Export CSV", value: "csv", },
-    { name: "Export PDF", value: "pdf", },
-    { name: "Delete All", value: "delete", danger: true },
-  ];
 
   const DateDropOptions = [
     { name: "Today", value: "today" },
@@ -81,66 +37,112 @@ const Notification = () => {
     { name: "Last 60 Days", value: "last-60-days" },
   ];
 
-  // Apply filters when dependencies change
-  useEffect(() => {
-    let result = [...notifications];
+  const BulkAction = [
+    { name: "Export CSV", value: "csv" },
+    { name: "Export PDF", value: "pdf" },
+    { name: "Delete All", value: "delete", danger: true },
+  ];
+
+  const filterNotifications = (data: Notification[]) => {
+    if (!data) return [];
+    
+    let filtered = [...data];
+
+    // Apply date filter
+    if (currentDateFilter) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      switch (currentDateFilter) {
+        case 'today':
+          filtered = filtered.filter(item => {
+            const itemDate = new Date(item.created_at);
+            return itemDate >= today;
+          });
+          break;
+        case 'yesterday':
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          filtered = filtered.filter(item => {
+            const itemDate = new Date(item.created_at);
+            return itemDate >= yesterday && itemDate < today;
+          });
+          break;
+        case 'last-7-days':
+          const sevenDaysAgo = new Date(today);
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          filtered = filtered.filter(item => {
+            const itemDate = new Date(item.created_at);
+            return itemDate >= sevenDaysAgo;
+          });
+          break;
+        case 'last-30-days':
+          const thirtyDaysAgo = new Date(today);
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          filtered = filtered.filter(item => {
+            const itemDate = new Date(item.created_at);
+            return itemDate >= thirtyDaysAgo;
+          });
+          break;
+        case 'last-60-days':
+          const sixtyDaysAgo = new Date(today);
+          sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+          filtered = filtered.filter(item => {
+            const itemDate = new Date(item.created_at);
+            return itemDate >= sixtyDaysAgo;
+          });
+          break;
+      }
+    }
+
+    // Apply search filter
     if (searchTerm) {
-      result = result.filter(
-        notification =>
-          notification.heading.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          notification.content.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(item =>
+        item.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.triggered_by_username.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    setFilteredNotifications(result);
-  }, [notifications, searchTerm, dateFilter]);
-
-  // Handle filter changes
-  const handleFilter = (value: any) => {
-    console.log(value);
+    return filtered;
   };
 
-
-  // CRUD Operations
-  const handleAddNotification = (notification: NotificationData) => {
-    const newNotification = {
-      ...notification,
-      id: notification.id || Date.now().toString(),
-    };
-
-    setNotifications(prev => [newNotification, ...prev]);
+  const handleFilter = (value: string) => {
+    if (DateDropOptions.some(option => option.value === value)) {
+      setCurrentDateFilter(value);
+    }
   };
 
-  const handleEditNotification = (notification: NotificationData) => {
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+
+  const handleEdit = (notification: Notification) => {
     setEditNotification(notification);
   };
 
-  const handleUpdateNotification = (updatedNotification: NotificationData) => {
-    setNotifications(prev =>
-      prev.map(item =>
-        item.id === updatedNotification.id ? updatedNotification : item
-      )
-    );
+  const handleDelete = async (id: number) => {
+    // if (window.confirm('Are you sure you want to delete this notification?')) {
+    //   await deleteMutation.mutateAsync(id);
+    // }
   };
 
-  const handleDeleteNotification = (id: string) => {
-    if (confirm('Are you sure you want to delete this notification?')) {
-      setNotifications(prev => prev.filter(item => item.id !== id));
-    }
+  const handleSubmit = async (notification: any) => {
+    // if (notification.id) {
+    //   await updateMutation.mutateAsync({
+    //     id: notification.id,
+    //     notification
+    //   });
+    // }
+    // setEditNotification(null);
   };
 
-  const resetEditMode = () => {
-    setEditNotification(null);
-  };
-
-  // Handle form submission (create or update)
-  const handleSubmit = (notification: NotificationData) => {
-    if (notification.id) {
-      handleUpdateNotification(notification);
-    } else {
-      handleAddNotification(notification);
-    }
-  };
+  const filteredNotifications = notifications?.data ? filterNotifications(notifications.data) : [];
+  const formattedActivities = activities?.data?.map((activity: AppActivity) => ({
+    id: activity.id.toString(),
+    user: activity.user.username,
+    action: activity.activity,
+    timestamp: new Date(activity.created_at).toLocaleTimeString()
+  })) || [];
 
   return (
     <div className='flex flex-col gap-8'>
@@ -148,9 +150,9 @@ const Notification = () => {
         <SendNotification
           onSubmit={handleSubmit}
           editNotification={editNotification}
-          resetEditMode={resetEditMode}
+          resetEditMode={() => setEditNotification(null)}
         />
-        <NotifcationCan notifications={notificationHistory}/>
+        <NotifcationCan notifications={formattedActivities} />
       </div>
 
       <TableFiltersCan>
@@ -170,22 +172,26 @@ const Notification = () => {
         </ItemGap>
         <SearchFilter
           Placeholder='Search Notification'
-          handleFunction={handleFilter}
+          handleFunction={handleSearch}
         />
       </TableFiltersCan>
 
-      <TableCan
-        headerTr={["Notification", "Date", "Attachment", "Action"]}
-        dataTr={filteredNotifications}
-        headerAlign='left'
-        TrName={NotificationRow}
-        trNameProps={{
-          onEdit: handleEditNotification,
-          onDelete: handleDeleteNotification
-        }}
-      />
+      {isLoadingNotifications ? (
+        <div>Loading...</div>
+      ) : (
+        <TableCan
+          headerTr={["Notification", "Date", "Attachment", "Action"]}
+          dataTr={filteredNotifications}
+          headerAlign='left'
+          TrName={NotificationRow}
+          trNameProps={{
+            onEdit: handleEdit,
+            onDelete: handleDelete
+          }}
+        />
+      )}
     </div>
   );
 };
 
-export default Notification;
+export default Notifications;

@@ -1,21 +1,31 @@
 import React from 'react';
+import { API_DOMAIN_images } from '../../../../util/apiConfig';
 
 type displayData = {
-    select: boolean;
-    name: string;
-    rank: "1";
-    img?: string;
-    winRate: string;
-    point: string;
-    AmountWon: string;
-    paymentStatus: string;
-    id?: string
+    user_id: number,
+    username: string,
+    profile_picture: string,
+    rank: number,
+    points: number,
+    win_rate: string,
+    win_amount: string,
+    currency: string,
+    bank_account: {
+        id: number,
+        user_i: number,
+        bank_name: string,
+        account_number: string,
+        account_name: string,
+        created_at: string,
+        updated_at: string
+    },
+    paid_status: boolean
 }
 
 type UserRowProps = {
     displayData: displayData;
     index?: number;
-    onAccountView: (displayData : displayData) => void;
+    onAccountView: (displayData: displayData) => void;
 }
 
 const RankRow = ({ displayData, index, onAccountView }: UserRowProps) => {
@@ -44,23 +54,19 @@ const RankRow = ({ displayData, index, onAccountView }: UserRowProps) => {
                 <td className="px-2 py-4">
                     <div className="flex items-center gap-2">
                         <img
-                            src={
-                                displayData.img
-                                    ? displayData.img
-                                    : `https://randomuser.me/api/portraits/men/41.jpg`
-                            }
+                            src={API_DOMAIN_images + displayData.profile_picture}
                             alt="profile"
                             className="h-8 w-8 rounded-full"
                             loading="lazy"
                         />
-                        <span className="text-black">{displayData.name}</span>
+                        <span className="text-black">{displayData.username}</span>
                     </div>
                 </td>
 
-                <td className='p-4'>{displayData.winRate}</td>
-                <td className='p-4'>{displayData.point}</td>
-                <td className='p-4'>{displayData.AmountWon}</td>
-                <td className={`p-4 text-center ${displayData.paymentStatus == "paid" ? 'text-green-500' : 'text-red-500'} `}>{displayData.paymentStatus}</td>
+                <td className='p-4'>{displayData.win_rate}</td>
+                <td className='p-4'>{displayData.points}</td>
+                <td className='p-4'>{displayData.win_amount}</td>
+                <td className={`p-4 ${displayData.paid_status ? 'text-green-500' : 'text-red-500'} `}>{displayData.paid_status ? 'paid' : 'pending'}</td>
                 <td>
                     <div className='flex items-center justify-center'>
                         <button className='px-6 py-2 text-white bg-green-500 cursor-pointer rounded-lg' onClick={() => onAccountView(displayData)}>

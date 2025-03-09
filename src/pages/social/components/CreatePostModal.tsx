@@ -1,32 +1,62 @@
 import React, { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AddPost } from "../../../../util/mutations/PostQueries";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
+import BtnLoader from "../../../components/btnLoader";
+import { useLocation } from "react-router-dom";
 
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (post: { content: string; images: string[] }) => void;
+  // onSubmit: (post: { content: string; images: File[]; type: string }) => void;
 }
 
-const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) => {
+  const CustomQueryKey = useLocation().pathname.substring(0,5) == '/user' ? 'usersProfile' : 'allPostData' ;
   const [content, setContent] = useState("");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [postType, setPostType] = useState("post");
 
-  if (!isOpen) return null;
+  const queryClient = useQueryClient();
+  const token = Cookies.get("authToken");
+
+  const { mutate: addPostMutation, isPending } = useMutation({
+    mutationFn: (formData: FormData) => AddPost(formData, token || ""),
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey :[CustomQueryKey]});
+      toast.success("Post created successfully!");
+      onClose();
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || error.message || "Failed to create post.");
+    },
+  });
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      const newImages = Array.from(files).map(file => URL.createObjectURL(file));
+      const newImages = Array.from(files);
       setImages(prev => [...prev, ...newImages]);
     }
   };
 
   const handleSubmit = () => {
     if (content.trim() === "") return;
-    onSubmit({ content, images });
-    setContent("");
-    setImages([]);
-    onClose();
+
+    const formData = new FormData();
+    formData.append("content", content);
+    formData.append("type", postType);
+    images.forEach((image, index) => {
+      formData.append(`images[${index}]`, image);
+    });
+
+    addPostMutation(formData);
+    // setContent("");
+    // setImages([]);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-[#00000052] bg-opacity-50 flex items-center justify-center z-[1000]">
@@ -52,7 +82,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onSu
           {/* Uploaded Images Preview */}
           {images.slice(0, 3).map((img, index) => (
             <div key={index} className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
-              <img src={img} alt={`upload-${index}`} className="w-full h-full object-cover" />
+              <img src={URL.createObjectURL(img)} alt={`upload-${index}`} className="w-full h-full object-cover" />
             </div>
           ))}
 
@@ -63,10 +93,25 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onSu
           )}
         </div>
 
+        {/* Post Type Selection */}
+        <label className="block text-lg mb-2 mt-4">Post Type</label>
+        <select
+          className="w-full p-3 bg-gray-100 rounded-lg focus:outline-none"
+          value={postType}
+          onChange={(e) => setPostType(e.target.value)}
+        >
+          <option value="post">Post</option>
+          <option value="announcement">Announcement</option>
+        </select>
+
         {/* Buttons */}
         <div className="mt-5">
-          <button className="w-full py-3 bg-red-700 text-white rounded-lg font-medium" onClick={handleSubmit}>
-            Send Post
+          <button
+            className="w-full py-3 bg-red-700 text-white rounded-lg font-medium"
+            onClick={handleSubmit}
+            disabled={isPending}
+          >
+            {isPending ? <BtnLoader /> : "Send Post"}
           </button>
         </div>
 

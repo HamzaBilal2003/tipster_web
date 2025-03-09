@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface User {
   id: string;
@@ -13,6 +13,12 @@ interface NotificationData {
   content: string;
   audience: User[];
   timestamp?: string;
+  attachment?: File | null;
+}
+
+interface Errors {
+  user_ids?: string[];
+  message?: string[];
   attachment?: string[];
 }
 
@@ -22,6 +28,7 @@ interface NotificationFormProps {
   openAudienceModal: () => void;
   selectedUsers: User[];
   handleAttachmentUpload: (file: File) => void;
+  errors?: Errors;
 }
 
 const NotificationForm: React.FC<NotificationFormProps> = ({
@@ -30,6 +37,7 @@ const NotificationForm: React.FC<NotificationFormProps> = ({
   openAudienceModal,
   selectedUsers,
   handleAttachmentUpload,
+  errors = {},
 }) => {
   return (
     <>
@@ -58,37 +66,34 @@ const NotificationForm: React.FC<NotificationFormProps> = ({
           placeholder="Type your message..."
           className="w-full p-3 bg-gray-200 rounded-lg min-h-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+        {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message[0]}</p>}
       </div>
 
-      {/* Camera Button */}
+      {/* Attachment Upload */}
       <div className="mb-6">
         <label htmlFor="camera-upload" className="p-4 px-6 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer">
           <i className="bi bi-camera text-xl" />
           <input
             type="file"
             id="camera-upload"
-            accept="image/*"
-            capture="environment"
+            accept=".jpg,.png,.pdf,.doc,.docx"
             className="hidden"
             onChange={(e) => {
-              console.log("click camera")
-              console.log("file" ,e.target.files)
               if (e.target.files && e.target.files[0]) {
                 handleAttachmentUpload(e.target.files[0]);
               }
             }}
           />
         </label>
+        {errors.attachment && <p className="text-red-500 text-sm mt-1">{errors.attachment[0]}</p>}
       </div>
 
       {/* Image Preview */}
-      {notification.attachment && notification.attachment.length > 0 && (
+      {notification.attachment && (
         <div className="mb-6">
-          <label className="block text-lg mb-2">Attachments</label>
+          <label className="block text-lg mb-2">Attachment Preview</label>
           <div className="flex flex-wrap gap-2">
-            {notification.attachment.map((file, index) => (
-              <img key={index} src={file} alt={`attachment-${index}`} className="w-16 h-16 rounded-lg border" />
-            ))}
+            <img src={URL.createObjectURL(notification.attachment)} alt="Attachment" className="w-16 h-16 rounded-lg border" />
           </div>
         </div>
       )}
@@ -96,7 +101,10 @@ const NotificationForm: React.FC<NotificationFormProps> = ({
       {/* Audience */}
       <div className="mb-6">
         <label className="block text-lg mb-2">Audience</label>
-        <div className="w-full p-3 bg-gray-200 rounded-lg flex items-center justify-between cursor-pointer hover:bg-gray-300 transition-colors" onClick={openAudienceModal}>
+        <div
+          className="w-full p-3 bg-gray-200 rounded-lg flex items-center justify-between cursor-pointer hover:bg-gray-300 transition-colors"
+          onClick={openAudienceModal}
+        >
           {selectedUsers.length > 0 ? (
             <div className="flex items-center">
               <div className="flex -space-x-2">
@@ -111,6 +119,7 @@ const NotificationForm: React.FC<NotificationFormProps> = ({
           )}
           <i className="bi bi-chevron-down text-lg"></i>
         </div>
+        {errors.user_ids && <p className="text-red-500 text-sm mt-1">{errors.user_ids[0]}</p>}
       </div>
     </>
   );

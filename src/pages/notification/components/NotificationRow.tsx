@@ -1,4 +1,5 @@
 import React from 'react';
+import FormatDate from '../../../components/FormatDate';
 
 
 interface User {
@@ -8,12 +9,16 @@ interface User {
   selected?: boolean;
 }
 interface NotificationData {
-  id?: string;
-  heading: string;
-  content: string;
-  audience: User[];
-  timestamp?: string;
-  attachment?: string[];
+  id: number;
+  user_id: number;
+  triggered_by_username: string;
+  type: string; // Extend types if needed
+  post_id: number | null;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  updated_at: string;
+  attachment: string[] | null;
 }
 
 interface NotificationRowProps {
@@ -25,23 +30,23 @@ interface NotificationRowProps {
 
 const NotificationRow: React.FC<NotificationRowProps> = ({ displayData, onEdit, onDelete }) => {
   return (
-    <tr className="border-b hover:bg-gray-50">
-        <td className="px-4 py-4">
-          <div className="flex items-center gap-2 w-fit">
-            <input
-              type="checkbox"
-              className="appearance-none w-5 h-5 border-2 border-gray-400 rounded-md 
+    <tr className=" cursor-pointer hover:bg-gray-50">
+      <td className="px-4 py-4">
+        <div className="flex items-center gap-2 w-fit">
+          <input
+            type="checkbox"
+            className="appearance-none w-5 h-5 border-2 border-gray-400 rounded-md 
                         checked:bg-green-600 checked:border-green-600 focus:ring-2 focus:ring-green-500 
                         relative flex items-center justify-center 
                         checked:after:content-['✓'] checked:after:text-white checked:after:text-xs checked:after:font-bold 
                         checked:after:absolute checked:after:top-1/2 checked:after:left-1/2 checked:after:-translate-x-1/2 checked:after:-translate-y-1/2"
-            />
-            <div className="flex items-center gap-2">
-              <span className="text-black">{displayData.heading}</span>
-            </div>
+          />
+          <div className="flex items-center gap-2">
+            <span className="text-black">{displayData.message}</span>
           </div>
-        </td>
-      <td className="p-4 text-left">{displayData.timestamp}</td>
+        </div>
+      </td>
+      <td className="p-4 text-left">{FormatDate(displayData.created_at)}</td>
       <td className="p-4 text-left">
         {displayData.attachment && displayData.attachment.length > 0 ? (
           <div className="flex -space-x-2">
@@ -64,7 +69,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ displayData, onEdit, 
             <i className="bi bi-pencil"></i>
           </button>
           <button
-            onClick={() => onDelete(displayData.id || '')}
+            onClick={() => onDelete(displayData.id)}
             className="p-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
           >
             <i className="bi bi-trash"></i>

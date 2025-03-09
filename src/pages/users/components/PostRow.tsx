@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import MoreDropdown from '../../../components/MoreDropdown';
-import { SingleUserData } from '../../../../util/queries/userManagement';
 import FormatDate from '../../../components/FormatDate';
-
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { DeletePost } from '../../../../util/queries/PostQueries';
+import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
+import BtnLoader from '../../../components/btnLoader';
+import { Route, useLocation } from 'react-router-dom';
 interface PostRowProps {
   displayData: {
     id: number;
@@ -23,6 +27,40 @@ interface PostRowProps {
 }
 
 const PostRow: React.FC<PostRowProps> = ({ displayData, index, onViewPost }) => {
+  // get url pathanme
+  const CustomQueryKey = useLocation().pathname.substring(0,5) == '/user' ? 'usersProfile' : 'allPostData' ;
+  const token = Cookies.get('authToken');
+  const [isdelLoading, setisdelLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { isLoading: isDeleteLoading, error: deleteError, refetch: fetchDelete } = useQuery({
+    queryKey: ['deletePost'],
+    queryFn: () => DeletePost(token, displayData.id),
+    enabled: false,
+  });
+
+  const handleDelete = () => {
+    if (!token) {
+      toast.error("Authentication token is missing");
+      return;
+    }
+    setisdelLoading(true)
+    toast.info('Wait!! Post is deleting...')
+    fetchDelete().then(({ error }) => {
+      if (error) {
+        toast.error("Something went wrong");
+        setisdelLoading(isDeleteLoading);
+        return;
+      }
+      if (!isDeleteLoading && !deleteError) {
+        toast.success("Post deleted successfully");
+        queryClient.invalidateQueries({ queryKey: [CustomQueryKey] });
+        // refresh the page
+        window.location.reload();
+        setisdelLoading(isDeleteLoading);
+      }
+    });
+  }
   return (
     <tr className='hover:bg-[#ececec] hover:cursor-pointer'>
       {/* Checkbox */}
@@ -41,7 +79,7 @@ const PostRow: React.FC<PostRowProps> = ({ displayData, index, onViewPost }) => 
 
       {/* Post Content */}
       <td className='px-4 py-2 text-black'>
-        {displayData.content?.length < 30 ? displayData.content :   (displayData.content)?.slice(0,30) + " ..." }
+        {displayData.content?.length < 30 ? displayData.content : (displayData.content)?.slice(0, 30) + " ..."}
       </td>
 
       {/* Date */}
@@ -51,7 +89,7 @@ const PostRow: React.FC<PostRowProps> = ({ displayData, index, onViewPost }) => 
       {/* Approval Status */}
       <td className='px-4 py-2'>
         <div className={`capitalize p-1 px-2 rounded-full ${displayData.status === 'under_review' ? 'text-red-500' : 'text-green-500'}`}>
-          {displayData.status.replace("_"," ")}
+          {displayData.status.replace("_", " ")}
         </div>
       </td>
 
@@ -62,10 +100,10 @@ const PostRow: React.FC<PostRowProps> = ({ displayData, index, onViewPost }) => 
             <button onClick={() => onViewPost && onViewPost(displayData)} className='bg-white block text-left p-2 cursor-pointer rounded-lg hover:bg-gray-200 w-full hover:text-black'>
               View Post
             </button>
-            {/* <div className='w-full h-[2px] bg-gray-300'></div>
-            <button className='bg-white block p-2 text-left cursor-pointer rounded-lg hover:bg-gray-200 w-full hover:text-black text-red-600'>
-              Delete
-            </button> */}
+            <div className='w-full h-[2px] bg-gray-300'></div>
+            <button onClick={handleDelete} disabled={isDeleteLoading} className='bg-white block p-2 text-left cursor-pointer rounded-lg hover:bg-red-600 w-full hover:text-black text-red-600'>
+              {isdelLoading ?  <BtnLoader  /> : "Delete Post"}
+            </button>
           </div>
         </MoreDropdown>
       </td>

@@ -1,3 +1,5 @@
+import NotifcationCan from "../src/pages/notification/components/NotifcationCan";
+
 const API_DOMAIN = 'https://tipster.hmstech.org/api/';
 const API_DOMAIN_images = 'https://tipster.hmstech.org/storage/';
 
@@ -16,7 +18,16 @@ const API_ENDPOINTS = {
   post:{
     getAllPostData: API_DOMAIN + "admin/get-post-management-data",
     deletePost: API_DOMAIN + "posts/delete-post/",
-    approvePost: API_DOMAIN + "posts/approvePost/"
+    approvePost: API_DOMAIN + "posts/approvePost/",
+    createPost : API_DOMAIN + "posts/create",
+  },
+  rank :{
+    getRankPrice : API_DOMAIN + "admin/rank/get-winners-amount",
+    updateRankPrice: API_DOMAIN + 'admin/rank/update-winner-amount',
+    getUsersRank : API_DOMAIN + 'admin/rank/get-top-10-rankings',
+  },
+  Notifcation : {
+    create : API_DOMAIN + "admin/notifications/create"
   }
 };
 

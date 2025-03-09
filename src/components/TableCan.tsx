@@ -44,25 +44,13 @@ const TableCan: React.FC<TableCanProps> = ({
             </tr>
           </thead>
           <tbody>
-            {dataTr.length > 0 ? (
-              dataTr.map((data, index) => {
-                // If TrName is a function component that returns JSX
-                if (typeof TrName === 'function') {
-                  // Check if it's being used with a wrapper function
-                  if (TrName.length > 1) {
-                    return <TrName key={index} displayData={data} index={index} {...trNameProps} />;
-                  } else {
-                    const TrComponent = TrName;
-                    return <TrComponent key={index} displayData={data} index={index} {...trNameProps} />;
-                  }
-                } else {
-                  // For class components or other React component types
-                  return <TrName key={index} displayData={data} index={index} {...trNameProps} />;
-                }
-              })
+            {dataTr && dataTr.length > 0 ? (
+              dataTr.map((data, index) => (
+                <TrName key={index} displayData={data} index={index} {...trNameProps} />
+              ))
             ) : (
               <tr>
-                <td colSpan={headerTr.length} className="text-center py-2 px-4">
+                <td colSpan={headerTr.length} className="text-center py-4 px-4">
                   No Data Found
                 </td>
               </tr>

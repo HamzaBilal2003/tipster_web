@@ -173,7 +173,7 @@ const Social = () => {
             const filterdata = data?.filter(item => item.user.id == Admin?.id);
             setpendingPosts(filterdata)
         }
-    }, [Tipdata, setPostType, Admin?.id, PostType])
+    }, [Tipdata, setPostType, Admin?.id, PostType,isLoading])
 
 
     if (isLoading) return <Loarder />
@@ -244,7 +244,7 @@ const Social = () => {
                     ))}
                 </div>
             </div>
-            <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleNewPost} />
+            <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}  />
         </div>
     )
 }
