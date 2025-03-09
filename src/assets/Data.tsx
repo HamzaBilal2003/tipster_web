@@ -16,6 +16,12 @@ export const Sidebar_links = [
     sublinks: [],
   },
   {
+    name: "Betting Companies",
+    link: "/betting/companies",
+    icon: sidebarIcon.bettingIcon,
+    sublinks: [],
+  },
+  {
     name: "Transactions",
     link: "/transactions",
     icon: sidebarIcon.transactions,

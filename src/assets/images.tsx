@@ -16,7 +16,7 @@ import second_2 from '../assets/images/second_2.png'
 import third_3 from '../assets/images/third_3.png'
 import swapy from '../assets/images/swapy.png'
 const dummyImage = "https://randomuser.me/api/portraits/men/1.jpg";
-
+import bettingIcon from '../assets/sidebarIcons/stake-stroke-rounded.svg'
 import loginBg from '../assets/images/loginbg.svg'
 import logobg from '../assets/images/logobg.png'
 
@@ -33,7 +33,8 @@ const images = {
         notification,
         setting,
         support,
-        logout
+        logout,
+        bettingIcon
     },
     money,
     dummyImage,

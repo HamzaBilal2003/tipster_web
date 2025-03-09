@@ -183,7 +183,7 @@ const Notifications = () => {
         <div>Loading...</div>
       ) : (
         <TableCan
-          headerTr={["Notification", "Date", "Attachment", "Action"]}
+          headerTr={["Notification", "Date", "Attachment"]}
           dataTr={filteredNotifications}
           headerAlign='left'
           TrName={NotificationRow}
