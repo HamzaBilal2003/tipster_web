@@ -16,12 +16,6 @@ export const Sidebar_links = [
     sublinks: [],
   },
   {
-    name: "Betting Companies",
-    link: "/betting/companies",
-    icon: sidebarIcon.bettingIcon,
-    sublinks: [],
-  },
-  {
     name: "Transactions",
     link: "/transactions",
     icon: sidebarIcon.transactions,
@@ -49,6 +43,18 @@ export const Sidebar_links = [
     name: "Subscriptions",
     link: "/subscriptions",
     icon: sidebarIcon.subscription,
+    sublinks: [],
+  },
+  {
+    name: "Betting Companies",
+    link: "/betting/companies",
+    icon: sidebarIcon.bettingIcon,
+    sublinks: [],
+  },
+  {
+    name: "Faqs",
+    link: "/faqs",
+    icon: sidebarIcon.faqs,
     sublinks: [],
   },
   {

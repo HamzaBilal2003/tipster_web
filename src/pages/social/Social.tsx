@@ -181,21 +181,6 @@ const Social = () => {
         setPostType(value);
         console.log(value);
     }
-    const handleNewPost = (newPost: { content: string; images: string[] }) => {
-        const newPostData = {
-            id: Date.now().toString(),
-            username: "You",
-            profileImage: "https://randomuser.me/api/portraits/men/1.jpg",
-            timestamp: new Date().toLocaleString(),
-            content: newPost.content,
-            likes: 0,
-            shares: 0,
-            views: "0",
-            images: newPost.images,
-            comments: [],
-        };
-        setUserPosts([newPostData, ...userPosts]);
-    };
     const slicedStats = Object.entries(Tipdata?.data.stats)  // Convert object to array of key-value pairs
         .slice(0, 6)  // Slice required range (index 1 to 5)
         .reduce((obj, [key, value]) => {   // Convert back to an object
