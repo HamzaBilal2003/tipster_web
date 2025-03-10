@@ -35,6 +35,11 @@ const API_ENDPOINTS = {
     craete : API_DOMAIN + "betting-company/create",
     get: API_DOMAIN + 'betting-company/get-all',
     updateCompany : API_DOMAIN + 'betting-company/get-all/'
+  },
+  faqs :{
+    update : API_DOMAIN + 'Faq/update/',
+    create : API_DOMAIN + 'Faq/create',
+    getAll : API_DOMAIN + 'Faq/get'
   }
 };
 

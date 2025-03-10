@@ -19,6 +19,7 @@ const dummyImage = "https://randomuser.me/api/portraits/men/1.jpg";
 import bettingIcon from '../assets/sidebarIcons/stake-stroke-rounded.svg'
 import loginBg from '../assets/images/loginbg.svg'
 import logobg from '../assets/images/logobg.png'
+import faqs from '../assets/sidebarIcons/faqs.svg'
 
 const images = {
     logo,
@@ -34,7 +35,8 @@ const images = {
         setting,
         support,
         logout,
-        bettingIcon
+        bettingIcon,
+        faqs
     },
     money,
     dummyImage,

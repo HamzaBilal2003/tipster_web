@@ -24,6 +24,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import LoginForm from './pages/login/LoginForm';
 import { AuthProvider } from './context/AuthContext';
 import BettingCompany from './pages/bettingCompanies/BettingCompany';
+import Faqs from './pages/faqs/Faqs';
 
 const clientProvider = new QueryClient();
 
@@ -41,6 +42,7 @@ function App() {
                 <Route path='users' element={<UserManagement />} />
                 <Route path='users/:username/profile' element={<UserProfile />} />
                 <Route path='betting/companies' element={<BettingCompany />} />
+                <Route path='faqs' element={<Faqs />} />
                 <Route path='transactions' element={<Transaction />} />
                 <Route path='predications' element={<Predication />} />
                 <Route path='/rank/managment' element={<Rank />} />
