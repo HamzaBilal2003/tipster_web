@@ -40,16 +40,21 @@ const Rank = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-
+  const [weekAgo, setWeekAgo] = useState<string | null>('1'); // Default to "1" for 'This Week'
   const queryClient = useQueryClient();
   const token = Cookies.get('authToken');
 
   const DateDropOptions = [
-    { name: 'Today', value: 'today' },
-    { name: 'Yesterday', value: 'yesterday' },
-    { name: 'Last 7 Days', value: 'last-7-days' },
-    { name: 'Last 30 Days', value: 'last-30-days' },
-    { name: 'Last 60 Days', value: 'last-60-days' },
+    { name: 'This Week', value: '1' },
+    { name: 'Last Week', value: '2' },
+    { name: 'Last 2 Weeks', value: '3' },
+    { name: 'Last 3 Weeks', value: '4' },
+    { name: 'Last 5 Weeks', value: '5' },
+    { name: 'Last 6 Weeks', value: '6' },
+    { name: 'Last 7 Weeks', value: '7' },
+    { name: 'Last 8 Weeks', value: '8' },
+    { name: 'Last 9 Weeks', value: '9' },
+    { name: 'Last 10 Weeks', value: '10' },
   ];
 
   const StatusOptions = [
@@ -57,9 +62,9 @@ const Rank = () => {
     { name: 'Pending', value: 'pending' },
   ];
 
-  const { data: userRankList, isLoading,refetch } = useQuery({
-    queryKey: ['ranklist'],
-    queryFn: () => fetchranks(token),
+  const { data: userRankList, isLoading, refetch } = useQuery({
+    queryKey: ['ranklist', weekAgo], // Pass `weekAgo` as a dependency
+    queryFn: () => fetchranks(token, weekAgo),
     onSuccess: (data) => {
       setFilterData(data.data); // Initialize filtered data
     },
@@ -83,6 +88,7 @@ const Rank = () => {
 
     if (DateDropOptions.some((option) => option.value === filterValue)) {
       setSelectedDate(filterValue); // Update date filter
+      setWeekAgo(filterValue); // Update weekAgo when a new date option is selected
     } else if (StatusOptions.some((option) => option.value === filterValue)) {
       setSelectedStatus(filterValue); // Update status filter
     }

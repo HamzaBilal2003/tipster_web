@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateRankPrice } from "../../../../util/mutations/rank";
 import Cookies from "js-cookie";
@@ -20,31 +20,45 @@ interface PriceUpdateModalProps {
   onUpdate: (updatedPrices: Price[]) => void;
 }
 
-const PriceUpdateModal: React.FC<PriceUpdateModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  prices, 
-  onUpdate 
+const PriceUpdateModal: React.FC<PriceUpdateModalProps> = ({
+  isOpen,
+  onClose,
+  prices,
+  onUpdate
 }) => {
-  const [updatedPrices, setUpdatedPrices] = useState<Price[]>(prices);
+  const [updatedPrices, setUpdatedPrices] = useState<Price[]>([]);
   const token = Cookies.get("authToken");
   const queryClient = useQueryClient();
+
+  console.log("prices", prices);
+
+  // Sync state with props when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setUpdatedPrices(prices.map(price => ({
+        ...price,
+        amount: price.amount ? price.amount.replace(/,/g, "") : "" // Remove commas
+      })));
+    }
+  }, [isOpen, prices]);
 
   const { mutate: handleUpdatePrices, isPending: isUpdating } = useMutation({
     mutationKey: ["updateRankPrice"],
     mutationFn: async () => {
-      const formattedData = { 
-        winners: updatedPrices.map((item) => ({ 
-          rank: item.rank, 
-          amount: Number(item.amount) 
-        })) 
+      const formattedData = {
+        winners: updatedPrices.map((item) => ({
+          rank: item.rank,
+          amount: item.amount.trim() !== "" ? Number(item.amount.replace(/,/g, "")) : Number(prices.find(p => p.rank === item.rank)?.amount.replace(/,/g, "") || 0) 
+        }))
       };
+
+      console.log("Final Data Sent to API:", formattedData);
       return await updateRankPrice(formattedData, token);
     },
-    onSuccess: async (response: any) => {
+    onSuccess: async () => {
       toast.success("Prices updated successfully!");
       await queryClient.invalidateQueries({ queryKey: ["rankPrices"] });
-      onUpdate(updatedPrices); // Update parent component state
+      onUpdate(updatedPrices);
       onClose();
     },
     onError: (error: any) => {
@@ -54,7 +68,7 @@ const PriceUpdateModal: React.FC<PriceUpdateModalProps> = ({
 
   const handlePriceChange = (index: number, value: string) => {
     setUpdatedPrices((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, amount: value } : item))
+      prev.map((item, i) => (i === index ? { ...item, amount: value.replace(/,/g, "") } : item))
     );
   };
 
@@ -65,8 +79,8 @@ const PriceUpdateModal: React.FC<PriceUpdateModalProps> = ({
       <div className="bg-white w-[500px] p-5 rounded-lg shadow-lg">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Price Update</h2>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="text-gray-500 hover:text-black cursor-pointer"
           >
             <i className="bi bi-x-circle text-2xl"></i>

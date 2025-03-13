@@ -8,7 +8,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import Cookies from "js-cookie";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-import { approvePost, DeletePost } from "../../../../util/queries/PostQueries";
+import { approvePost, DeletePost, PinPost } from "../../../../util/queries/PostQueries";
 import { toast } from "react-toastify";
 
 
@@ -27,8 +27,11 @@ interface PostProps {
     share_count: number;
     view_count: number;
     recent_comments: any[];
+    status: string;
+    rank: number;
     image_1?: string;
     image_2?: string;
+    is_pinned: boolean;
     image_3?: string;
     image_4?: string;
     image_5?: string;
@@ -56,7 +59,7 @@ const Post: React.FC<{ post: PostProps }> = ({ post }) => {
 
     const [isApploading, setisApploading] = useState(false);
     const [isdelLoading, setisdelLoading] = useState(false)
-    
+
     const { isLoading: isApproveLoading, error: approveError, refetch: fetchApprove } = useQuery({
         queryKey: ['approvePost'],
         queryFn: () => approvePost(token, post.id),
@@ -65,6 +68,11 @@ const Post: React.FC<{ post: PostProps }> = ({ post }) => {
     const { isLoading: isDeleteLoading, error: deleteError, refetch: fetchDelete } = useQuery({
         queryKey: ['deletePost'],
         queryFn: () => DeletePost(token, post.id),
+        enabled: false,
+    });
+    const { isLoading: isPinning, error: pinError, refetch: fetchPin } = useQuery({
+        queryKey: ['deletePost'],
+        queryFn: () => PinPost(token, post.id),
         enabled: false,
     });
 
@@ -109,6 +117,26 @@ const Post: React.FC<{ post: PostProps }> = ({ post }) => {
             }
         });
     }
+    const handlePin = () => {
+        if (!token) {
+            toast.error("Authentication token is missing");
+            return;
+        }
+        setisApploading(true)
+        toast.info('Wait!! Post is pinning...')
+        fetchPin().then(({ error }) => {
+            if (error) {
+                toast.error("Something went wrong");
+                setisApploading(isApproveLoading);
+                return;
+            }
+            if (!isApproveLoading && !approveError) {
+                toast.success("Post Has been pinned successfully");
+                queryClient.invalidateQueries({ queryKey: ['allPostData'] });
+                setisApploading(isApproveLoading);
+            }
+        });
+    }
 
     const renderImages = () => {
         if (!PostImages || PostImages.length === 0) return null;
@@ -145,18 +173,16 @@ const Post: React.FC<{ post: PostProps }> = ({ post }) => {
                         </div>
                     </div>
                     <div className="flex gap-3">
-                        <button className="text-green-500 font-medium cursor-pointer" onClick={()=>handleApprove()} disabled={isApploading}>{isApploading ? 'Approving...' :  'Approve'}</button>
-                        <button className="text-red-500 font-medium cursor-pointer" onClick={()=>handleDelete()} disabled={isdelLoading}>{isdelLoading ? "Deleting..." : 'Delete'}</button>
+                        {post.status == 'under_review' && <button className="text-green-500 font-medium cursor-pointer" onClick={() => handleApprove()} disabled={isApploading}>{isApploading ? 'Approving...' : 'Approve'}</button>}
+                        <button className="text-blue-500 font-medium cursor-pointer" onClick={() => handlePin()} disabled={isPinning}>{post.is_pinned ? "Unpin" : isPinning ? "Pining..." : 'Pin'}</button>
+                        <button className="text-red-500 font-medium cursor-pointer" onClick={() => handleDelete()} disabled={isdelLoading}>{isdelLoading ? "Deleting..." : 'Delete'}</button>
                     </div>
                 </div>
 
                 {/* Post Content */}
                 <div className="text-lg">{post.content}</div>
 
-                {/* Image Attachments */}
                 {renderImages()}
-
-                {/* Post Actions */}
                 <div className="flex justify-between items-center pt-3 text-gray-700">
                     <div className="flex items-center gap-2">
                         <i className="bi bi-hand-thumbs-up text-xl"></i>
@@ -170,13 +196,10 @@ const Post: React.FC<{ post: PostProps }> = ({ post }) => {
                         <span>{post.comments_count}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <i className="bi bi-share text-xl"></i>
-                        <span>{post.share_count}</span>
+                        <i className="bi bi-star text-xl"></i>
+                        <span>{post.rank} Rank</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <i className="bi bi-eye text-xl"></i>
-                        <span>{post.view_count}</span>
-                    </div>
+
                 </div>
             </div>
 

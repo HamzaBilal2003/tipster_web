@@ -67,7 +67,7 @@ const PreRow: React.FC<UserRowProps> = ({ displayData, index,onViewTip }) => {
             <td className="px-4 py-2 text-black">{FormatDate(displayData.created_at)}</td>
 
             <td className="px-4 py-2">
-                <div className={`text-center capitalize gap-2 p-1 px-2 rounded-full ${displayData.result == 'running' ? "bg-yellow-500 text-black" : displayData.status == 'lost' ? "bg-red-500 text-black" : "bg-green-500 text-black"}`}>
+                <div className={`text-center capitalize gap-2 p-1 px-2 rounded-full ${displayData.result == 'running' ? "bg-yellow-500 text-black" : displayData.result == 'lost' ? "bg-red-500 text-black" : "bg-green-500 text-black"}`}>
                     {displayData.result}
                 </div>
             </td>

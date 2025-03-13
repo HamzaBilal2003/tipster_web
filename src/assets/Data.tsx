@@ -22,7 +22,7 @@ export const Sidebar_links = [
     sublinks: [],
   },
   {
-    name: "Predications",
+    name: "Predictions",
     link: "/predications",
     icon: sidebarIcon.predication,
     sublinks: [],

@@ -17,11 +17,11 @@ export const fetchrankPrices = async (
     }
 };
 export const fetchranks = async (
-    token: string
+    token: string,weekAgo: string
 ): Promise<RankResponse> => {
     try {
         const response = await apiCall({
-            url: API_ENDPOINTS.rank.getUsersRank,
+            url:`${API_ENDPOINTS.rank.getUsersRank}?weekAgo=${weekAgo}`,
             method: 'GET',
             data: undefined,
             token: token,

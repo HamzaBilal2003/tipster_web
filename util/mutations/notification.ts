@@ -7,7 +7,16 @@ const API_BASE_URL = API_DOMAIN; // Replace with your actual API base URL
 const token = Cookies.get("authToken"); // Retrieve token from cookies
 
 export const fetchNotifications = async () => {
-  const response = await axios.get(`${API_BASE_URL}notifications`, {
+  const response = await axios.get(`${API_BASE_URL}admin/notifications/get`, {
+    headers: {
+      Authorization: `Bearer ${token}`, // Attach Token
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+export const fetchUser = async () => {
+  const response = await axios.get(`${API_BASE_URL}admin/user/getAllUsers`, {
     headers: {
       Authorization: `Bearer ${token}`, // Attach Token
       "Content-Type": "application/json",

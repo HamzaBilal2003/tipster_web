@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import NotificationForm from "./NotificationForm";
 import AudienceModal from "./AudienceModal";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiCall } from "../../../../util/cutomApiCall";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 import { API_ENDPOINTS } from "../../../../util/apiConfig";
+import { fetchUser } from "../../../../util/mutations/notification";
 
 interface User {
   id: number;
@@ -69,11 +70,21 @@ const SendNotification: React.FC<SendNotificationProps> = ({
 }) => {
   const sendNotification = useSendNotification();
   const [audienceSelectdata, setaudienceSelectdata] = useState<number[]>([]);
-
+const [users, setUsers] = useState<User[]>([]);
+  const {data:UserData}=useQuery({
+    queryKey: ["user"],
+    queryFn: () => fetchUser(),
+  });
   const allUsers: User[] = [
     { id: 1, name: "Alucard", avatar: "https://via.placeholder.com/150" },
     { id: 2, name: "Sarah", avatar: "https://via.placeholder.com/150" },
   ];
+  useEffect(() => {
+    if (UserData) {
+      setUsers(UserData.data);
+    }
+  })
+ 
 
   const [notification, setNotification] = useState<NotificationData>({
     heading: "",
@@ -106,7 +117,7 @@ const SendNotification: React.FC<SendNotificationProps> = ({
     setTempSelectedUsers([...selectedUsers]);
     setShowAudienceModal(true);
     setaudienceSelectdata(selectedUsers.map((item) => item.id));
-    setSelectAll(allUsers.length === selectedUsers.length && selectedUsers.length > 0);
+    setSelectAll(users.length === selectedUsers.length && selectedUsers.length > 0);
   };
 
   const closeAudienceModal = () => {
@@ -137,7 +148,7 @@ const SendNotification: React.FC<SendNotificationProps> = ({
     const formData = new FormData();
     formData.append("message", notification.content);
     formData.append("heading", notification.heading);
-    
+
     // Properly append user_ids as an array
     audienceSelectdata.forEach((userId, index) => {
       formData.append(`user_ids[${index}]`, userId.toString());
@@ -213,8 +224,8 @@ const SendNotification: React.FC<SendNotificationProps> = ({
           {sendNotification.isPending
             ? "Sending..."
             : editNotification
-            ? "Update Notification"
-            : "Send Notification"}
+              ? "Update Notification"
+              : "Send Notification"}
         </button>
       </form>
 
@@ -223,19 +234,19 @@ const SendNotification: React.FC<SendNotificationProps> = ({
         showModal={showAudienceModal}
         closeModal={closeAudienceModal}
         applySelection={applyAudienceSelection}
-        allUsers={allUsers}
+        allUsers={users}
         tempSelectedUsers={tempSelectedUsers}
         selectAll={selectAll}
         toggleSelectAll={() => {
           const newSelectAll = !selectAll;
           setSelectAll(newSelectAll);
-          setTempSelectedUsers(newSelectAll ? [...allUsers] : []);
+          setTempSelectedUsers(newSelectAll ? [...users] : []);
         }}
         toggleUserSelection={(userId) =>
           setTempSelectedUsers((prev) =>
             prev.some((user) => user.id === userId)
               ? prev.filter((user) => user.id !== userId)
-              : [...prev, allUsers.find((user) => user.id === userId)!]
+              : [...prev, users.find((user) => user.id === userId)!]
           )
         }
         isUserSelected={(userId) =>

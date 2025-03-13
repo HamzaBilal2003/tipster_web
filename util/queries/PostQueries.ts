@@ -19,7 +19,7 @@ export const fetchPostData = async (
 };
 export const approvePost = async (
   token: string,
-  PostId:number
+  PostId: number
 ) => {
   try {
     const response = await apiCall({
@@ -37,12 +37,60 @@ export const approvePost = async (
 
 export const DeletePost = async (
   token: string,
-  PostId:number
+  PostId: number
 ) => {
   try {
     const response = await apiCall({
       url: API_ENDPOINTS.post.deletePost + PostId,
       method: 'GET',
+      data: undefined,
+      token: token,
+    });
+    return response;
+  } catch (error: any) {
+    throw new Error(error?.message || 'Failed to fetch users');
+  }
+};
+export const PinPost = async (
+  token: string,
+  PostId: number
+) => {
+  try {
+    const response = await apiCall({
+      url: API_ENDPOINTS.post.pinPost + PostId,
+      method: 'GET',
+      data: undefined,
+      token: token,
+    });
+    return response;
+  } catch (error: any) {
+    throw new Error(error?.message || 'Failed to fetch users');
+  }
+};
+export const ApproveComment = async (
+  token: string,
+  commentId: number
+) => {
+  try {
+    const response = await apiCall({
+      url: API_ENDPOINTS.post.approveComment + commentId,
+      method: 'POST',
+      data: undefined,
+      token: token,
+    });
+    return response;
+  } catch (error: any) {
+    throw new Error(error?.message || 'Failed to fetch users');
+  }
+};
+export const DeleteComment = async (
+  token: string,
+  commentId: number
+) => {
+  try {
+    const response = await apiCall({
+      url: API_ENDPOINTS.post.deleteComment + commentId,
+      method: 'POST',
       data: undefined,
       token: token,
     });

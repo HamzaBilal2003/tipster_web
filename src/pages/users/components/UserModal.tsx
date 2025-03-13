@@ -10,7 +10,7 @@ interface UserModalProps {
   onSave: (userData: any) => void;
   userData: any;
   isEdit?: boolean;
-  dataFetchName:string;
+  dataFetchName: string;
 }
 
 const nationalities = [
@@ -37,7 +37,7 @@ const UserModal: React.FC<UserModalProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [isLoading,Setisloading] = useState(false)
+  const [isLoading, Setisloading] = useState(false)
   const [formData, setFormData] = useState({
     username: userData?.name || "",
     email: userData?.email || "",
@@ -188,6 +188,18 @@ const UserModal: React.FC<UserModalProps> = ({
                 required
               />
             </div>
+            <div className="space-y-2">
+              <label className="block text-gray-700 font-medium">Phone</label>
+              <input
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Enter Phone"
+                className="w-full p-4 bg-gray-100 rounded-lg"
+                required
+              />
+            </div>
 
             {/* Date of Birth */}
             <div className="space-y-2">
@@ -249,7 +261,7 @@ const UserModal: React.FC<UserModalProps> = ({
 
           <div className="p-4">
             <button disabled={isLoading} type="submit" className="cursor-pointer w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-md font-medium">
-              {isEdit ?  isLoading ? "Saving User..." : "Save Changes" : "Register"}
+              {isEdit ? isLoading ? "Saving User..." : "Save Changes" : "Register"}
             </button>
           </div>
         </form>

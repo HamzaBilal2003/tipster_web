@@ -22,6 +22,9 @@ const API_ENDPOINTS = {
     deletePost: API_DOMAIN + "posts/delete-post/",
     approvePost: API_DOMAIN + "posts/approvePost/",
     createPost: API_DOMAIN + "posts/create",
+    pinPost: API_DOMAIN + "admin/make-post-pin/",
+    approveComment: API_DOMAIN + "comments/approve/",
+    deleteComment: API_DOMAIN + "comments/delete/",
   },
   rank: {
     getRankPrice: API_DOMAIN + "admin/rank/get-winners-amount",
@@ -35,12 +38,12 @@ const API_ENDPOINTS = {
   BettingCompany: {
     craete: API_DOMAIN + "betting-company/create",
     get: API_DOMAIN + 'betting-company/get-all',
-    updateCompany : API_DOMAIN + 'betting-company/get-all/'
+    updateCompany: API_DOMAIN + 'betting-company/get-all/'
   },
-  faqs :{
-    update : API_DOMAIN + 'Faq/update/',
-    create : API_DOMAIN + 'Faq/create',
-    getAll : API_DOMAIN + 'Faq/get'
+  faqs: {
+    update: API_DOMAIN + 'Faq/update/',
+    create: API_DOMAIN + 'Faq/create',
+    getAll: API_DOMAIN + 'Faq/get'
   },
   Support: {
     chat: API_DOMAIN + "admin/get-chats-for-admin",

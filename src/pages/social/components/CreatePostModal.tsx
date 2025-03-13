@@ -13,7 +13,7 @@ interface CreatePostModalProps {
 }
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) => {
-  const CustomQueryKey = useLocation().pathname.substring(0,5) == '/user' ? 'usersProfile' : 'allPostData' ;
+  const CustomQueryKey = useLocation().pathname.substring(0, 5) == '/user' ? 'usersProfile' : 'allPostData';
   const [content, setContent] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [postType, setPostType] = useState("post");
@@ -24,7 +24,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) =>
   const { mutate: addPostMutation, isPending } = useMutation({
     mutationFn: (formData: FormData) => AddPost(formData, token || ""),
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey :[CustomQueryKey]});
+      queryClient.invalidateQueries({ queryKey: [CustomQueryKey] });
       toast.success("Post created successfully!");
       onClose();
     },
@@ -46,7 +46,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) =>
 
     const formData = new FormData();
     formData.append("content", content);
-    formData.append("type", postType);
+    formData.append("type", 'announcement');
+    formData.append("status", 'approved');
     images.forEach((image, index) => {
       formData.append(`images[${index}]`, image);
     });
@@ -94,7 +95,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) =>
         </div>
 
         {/* Post Type Selection */}
-        <label className="block text-lg mb-2 mt-4">Post Type</label>
+        {/* <label className="block text-lg mb-2 mt-4">Post Type</label>
         <select
           className="w-full p-3 bg-gray-100 rounded-lg focus:outline-none"
           value={postType}
@@ -102,7 +103,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) =>
         >
           <option value="post">Post</option>
           <option value="announcement">Announcement</option>
-        </select>
+        </select> */}
 
         {/* Buttons */}
         <div className="mt-5">

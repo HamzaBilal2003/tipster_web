@@ -173,7 +173,7 @@ const Social = () => {
             const filterdata = data?.filter(item => item.user.id == Admin?.id);
             setpendingPosts(filterdata)
         }
-    }, [Tipdata, setPostType, Admin?.id, PostType,isLoading])
+    }, [Tipdata, setPostType, Admin?.id, PostType, isLoading])
 
 
     if (isLoading) return <Loarder />
@@ -181,13 +181,13 @@ const Social = () => {
         setPostType(value);
         console.log(value);
     }
-    const slicedStats = Object.entries(Tipdata?.data.stats)  // Convert object to array of key-value pairs
-        .slice(0, 6)  // Slice required range (index 1 to 5)
-        .reduce((obj, [key, value]) => {   // Convert back to an object
+    const slicedStats = Object.entries(Tipdata?.data.stats)
+        .slice(0, 4)
+        .reduce((obj, [key, value]) => {
             obj[key] = value;
             return obj;
         }, {});
-    // stats data
+
     const statsArray = Object.values(slicedStats);
     const ApprovedPost = Tipdata?.data.stats.approvedPost
     return (
@@ -229,7 +229,7 @@ const Social = () => {
                     ))}
                 </div>
             </div>
-            <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}  />
+            <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </div>
     )
 }

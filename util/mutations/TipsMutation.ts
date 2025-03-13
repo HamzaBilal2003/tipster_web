@@ -4,6 +4,8 @@ import { apiCall } from '../cutomApiCall';
 export  const UpdateTipFetch = async (data: {
     status:string;
     result:string;
+    rejection_reason:string
+    odds:string
 },tipId: number,token: string): Promise<UpdateTipResponse> => {
   try {
     const response = await apiCall({ url: API_ENDPOINTS.tips.UpdateTip  + tipId, method: 'POST', data:data ,token : token });

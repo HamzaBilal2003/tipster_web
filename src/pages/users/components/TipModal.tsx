@@ -22,6 +22,7 @@ interface TipModalProps {
     betting_category: string;
     created_at: string;
     updated_at: string;
+    rejection_reason: string;
     betting_company: {
       id: number;
       title: string;
@@ -38,20 +39,21 @@ interface TipModalProps {
       last_five: Array<string>;
     };
   };
-  dataFetchName:string
+  dataFetchName: string
 }
 
-const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData,dataFetchName }) => {
+const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData, dataFetchName }) => {
   const [selectedDate, setSelectedDate] = useState<string>(tipData?.match_date);
   const [approvalStatus, setApprovalStatus] = useState<string>(tipData.status);
+  const [RejectionReason, setRejectionReason] = useState<string>(tipData.rejection_reason);
   const [betStatus, setBetStatus] = useState<string>(tipData.result);
   const [odds, setOdds] = useState<string>(tipData?.ods);
   const [selectedCompony, setselectedCompony] = useState(tipData?.betting_company.title);
   const [code, setCode] = useState<string>(tipData?.codes);
   const [category, setCategory] = useState<string>(tipData?.betting_category);
-
+  const [ods, setOds] = useState<string>(tipData.ods);
   const token = Cookies.get('authToken');
-  console.log("tipData from Model: " , tipData)
+  console.log("tipData from Model: ", tipData)
   const BetStatusOptions = [
     { name: 'Running', value: 'running' },
     { name: 'Won', value: 'won' },
@@ -61,8 +63,8 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData,dataFetchN
 
   const { mutate: updateTipMutation, isPending, error } = useMutation({
     mutationKey: ['updateTip'],
-    mutationFn: () => UpdateTipFetch({ status: approvalStatus, result: betStatus },tipData.id, token),
-    onSuccess: (data : any) => {
+    mutationFn: () => UpdateTipFetch({ status: approvalStatus, result: betStatus, rejection_reason: RejectionReason , odds: ods}, tipData.id, token),
+    onSuccess: (data: any) => {
       console.log(data)
       queryClient.invalidateQueries({ queryKey: [dataFetchName] });
       onClose();
@@ -110,8 +112,9 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData,dataFetchN
             <label className="block text-gray-700 font-medium">Number of odds</label>
             <input
               type="text"
-              value={tipData.ods}
+              value={ods}
               className="p-3 bg-gray-300 rounded-lg w-full outline-none"
+              onChange={(e) => setOds(e.target.value)}
             />
           </div>
 
@@ -159,9 +162,23 @@ const TipModal: React.FC<TipModalProps> = ({ isOpen, onClose, tipData,dataFetchN
               >
                 <option value="approved">Approved</option>
                 <option value="pending">Pending</option>
+                <option value="rejected">Reject</option>
               </select>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <label className="block text-gray-700 font-medium">Rejection Reason</label>
+            <div className="flex items-center justify-between p-3 bg-gray-300 rounded-lg">
+              <input
+                type="text"
+                value={RejectionReason}
+                className="bg-transparent outline-none w-full"
+                onChange={(e) => setRejectionReason(e.target.value)}
+              />
+            </div>
+          </div>
+
 
           <div className="space-y-2">
             <label className="block text-gray-700 font-medium">Bet Status</label>

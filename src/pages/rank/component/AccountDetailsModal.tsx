@@ -31,32 +31,26 @@ interface AccountDetailsModalProps {
 }
 
 const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({ isOpen, onClose, account }) => {
-  const [bankInfo, setBankInfo] = useState({
-    bankName: "",
-    accountNumber: "",
-  });
-
   const token = Cookies.get("authToken");
   const queryClient = useQueryClient();
 
   // Fetch Bank Info
-  const { data: bankInfoDetail, isLoading } = useQuery({
-    queryKey: ["bankinfo"],
+  const { data: bankInfoDetail, isLoading, isError, refetch } = useQuery({
+    queryKey: ["bankinfo", account?.user_id],
     queryFn: async () => {
-      const response = await fetch(API_DOMAIN + "bank/get-for-user", {
+      const response = await fetch(API_DOMAIN + "bank/get-of-user/" + account?.user_id, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Attach Authorization Token
+          Authorization: `Bearer ${token}`,
         },
       });
-
       if (!response.ok) throw new Error("Failed to fetch bank info");
       return response.json();
     },
     enabled: isOpen && !!account,
+    retry: 1,
   });
-  console.log(bankInfoDetail)
 
   // Mutation for marking as paid
   const { mutate: markAsPaid, isPending } = useMutation({
@@ -74,13 +68,12 @@ const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({ isOpen, onClo
           rank: account?.rank,
         }),
       });
-
       if (!response.ok) throw new Error("Failed to mark as paid");
       return response.json();
     },
     onSuccess: () => {
       toast.success("Payment marked as paid successfully!");
-      queryClient.invalidateQueries({ queryKey: ["rankPrices"] }); // Refresh data
+      queryClient.invalidateQueries({ queryKey: ["rankPrices"] });
       onClose();
     },
     onError: (error) => {
@@ -89,70 +82,83 @@ const AccountDetailsModal: React.FC<AccountDetailsModalProps> = ({ isOpen, onClo
   });
 
   if (!isOpen || !account) return null;
-  if (isLoading) return <Loarder />
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-[#0000005c] bg-opacity-50 z-50">
       <div className="bg-white w-[450px] p-6 rounded-lg shadow-md">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold">
-            <span className="text-red-600">{account.name}</span> Account Details - {account.AmountWon}
+            <span className="text-red-600">{account.username}</span> Account Details - {account.win_amount}
           </h2>
           <button onClick={onClose} className="text-gray-500 text-xl cursor-pointer">×</button>
         </div>
 
-        {/* Account Name */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Account Name</label>
-          <input
-            type="text"
-            value={bankInfoDetail.data.account_name}
-            disabled
-            className="w-full bg-gray-100 p-3 rounded-md"
-
-          />
-        </div>
-
-        {/* Bank Name (Editable) */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Bank Name</label>
-          <input
-            type="text"
-            value={bankInfoDetail.data.bank_name}
-            onChange={(e) => setBankInfo((prev) => ({ ...prev, bankName: e.target.value }))}
-            className="w-full p-3 rounded-md border border-gray-300"
-            disabled
-          />
-        </div>
-
-        {/* Account Number (Editable) */}
-        <div className="mb-4 relative">
-          <label className="block text-sm font-medium text-gray-700">Account Number</label>
-          <div className="flex items-center">
-            <input
-              type="text"
-              value={bankInfoDetail.data.account_number}
-              onChange={(e) => setBankInfo((prev) => ({ ...prev, accountNumber: e.target.value }))}
-              className="w-full p-3 rounded-md border border-gray-300"
-              disabled
-            />
+        {isLoading ? (
+          <Loarder />
+        ) : isError ? (
+          <div className="text-red-600 text-center">
+            <p>Error fetching bank info</p>
             <button
-              className="ml-2 text-gray-500 cursor-pointer hover:text-gray-700"
-              onClick={() => navigator.clipboard.writeText(bankInfoDetail.data.account_number)}
+              onClick={refetch}
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
-              <i className="bi bi-copy"></i>
+              Retry
             </button>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Account Name */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Account Name</label>
+              <input
+                type="text"
+                value={bankInfoDetail?.data.account_name || "N/A"}
+                disabled
+                className="w-full bg-gray-100 p-3 rounded-md"
+              />
+            </div>
 
-        {/* Mark as Paid Button */}
-        <button
-          className="w-full py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400"
-          onClick={() => markAsPaid()}
-          disabled={isPending}
-        >
-          {isPending ? "Processing..." : "Mark As Paid"}
-        </button>
+            {/* Bank Name */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Bank Name</label>
+              <input
+                type="text"
+                value={bankInfoDetail?.data.bank_name || "N/A"}
+                disabled
+                className="w-full p-3 rounded-md border border-gray-300"
+              />
+            </div>
+
+            {/* Account Number */}
+            <div className="mb-4 relative">
+              <label className="block text-sm font-medium text-gray-700">Account Number</label>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={bankInfoDetail?.data.account_number || "N/A"}
+                  disabled
+                  className="w-full p-3 rounded-md border border-gray-300"
+                />
+                <button
+                  className="ml-2 text-gray-500 cursor-pointer hover:text-gray-700"
+                  onClick={() => navigator.clipboard.writeText(bankInfoDetail?.data.account_number || "")}
+                >
+                  <i className="bi bi-copy"></i>
+                </button>
+              </div>
+            </div>
+
+            {/* Mark as Paid Button */}
+            <button
+              className="w-full py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400"
+              onClick={() => markAsPaid()}
+              disabled={isPending}
+            >
+              {isPending ? "Processing..." : "Mark As Paid"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
