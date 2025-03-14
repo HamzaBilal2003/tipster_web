@@ -35,7 +35,7 @@ const BettingCompany = () => {
 
   const { mutate: updateCompany, isPending: isUpdating } = useMutation({
     mutationKey: ["updatingCompany"],
-    mutationFn: (formData: FormData) => UpdateCompany(formData,editingId, token || ""),
+    mutationFn: (formData: FormData) => UpdateCompany(formData, editingId, token || ""),
     onSuccess: () => {
       toast.success("Betting Company updated successfully");
       queryClient.invalidateQueries({ queryKey: ["companies"] });
@@ -72,7 +72,7 @@ const BettingCompany = () => {
       const formData = new FormData();
       formData.append("title", values.title);
       if (values.logo) formData.append("logo", values.logo);
-      
+
       if (isEditing && editingId) {
         formData.append("id", editingId.toString());
         updateCompany(formData);

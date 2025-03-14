@@ -8,6 +8,6 @@ export const createCompany = async (formdata: FormData, token: string) => {
 
 
 export const UpdateCompany = async (formdata: FormData,companyId : number, token: string) => {
-    return await apiCall({ url: API_ENDPOINTS.BettingCompany.updateCompany + companyId , method: 'PUT', data: formdata, token: token });
+    return await apiCall({ url: API_ENDPOINTS.BettingCompany.updateCompany + companyId , method: 'POST', data: formdata, token: token });
 };
 

@@ -38,7 +38,7 @@ const API_ENDPOINTS = {
   BettingCompany: {
     craete: API_DOMAIN + "betting-company/create",
     get: API_DOMAIN + 'betting-company/get-all',
-    updateCompany: API_DOMAIN + 'betting-company/get-all/'
+    updateCompany: API_DOMAIN + 'betting-company/update/'
   },
   faqs: {
     update: API_DOMAIN + 'Faq/update/',
